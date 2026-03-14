@@ -10,7 +10,6 @@ import lombok.Data;
         @UniqueConstraint(columnNames = "id"),
         @UniqueConstraint(columnNames = "username")
 })
-
 public class Users {
 
     @Id
