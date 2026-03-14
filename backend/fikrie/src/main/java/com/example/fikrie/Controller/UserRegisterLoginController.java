@@ -10,25 +10,24 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @CrossOrigin
 @Slf4j
-@RequestMapping("/user")
-public class UserController {
+public class UserRegisterLoginController {
 
     @Autowired
     private UserService userService;
 
-    @GetMapping("/get-user-info")
-    public ResponseEntity<RequestRespondUser> getUserInfo(@RequestBody RequestRespondUser requestRespondUser) {
-        return ResponseEntity.ok(userService.getUserProfile(requestRespondUser.getUsers().getUsername()));
+    @PostMapping("/register")
+    public ResponseEntity<RequestRespondUser> register(@RequestBody RequestRespondUser requestRespondUser) {
+        return ResponseEntity.ok(userService.register(requestRespondUser));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<RequestRespondUser> login(@RequestBody RequestRespondUser requestRespondUser) {
+        return ResponseEntity.ok(userService.login(requestRespondUser));
     }
 
     @PutMapping("reset-password")
     public ResponseEntity<RequestRespondUser> resetPassword(@RequestBody RequestRespondUser requestRespondUser) {
         return ResponseEntity.ok(userService.resetPassword(requestRespondUser));
-    }
-
-    @PutMapping("/update-user")
-    public ResponseEntity<RequestRespondUser> updateUser(@RequestBody RequestRespondUser requestUpdateUser) {
-        return ResponseEntity.ok(userService.updateUser(requestUpdateUser.getUsername(), requestUpdateUser.getUsers()));
     }
 
 }
