@@ -1,7 +1,6 @@
 package com.example.fikrie.Service;
 
 import com.example.fikrie.DataTransferObject.RequestRespondInbound;
-import com.example.fikrie.DataTransferObject.RequestRespondInventory;
 import com.example.fikrie.Model.Inbound;
 import com.example.fikrie.Model.Inventory;
 import com.example.fikrie.Repository.InboundRepo;
@@ -63,7 +62,7 @@ public class InboundService {
             }
         } catch (Exception e) {
             requestRespondInbound.setStatusCode(500);
-            requestRespondInbound.setMessage("Error occurred when getting inventory by name : " + e.getMessage());
+            requestRespondInbound.setMessage("Error occurred when getting inbound by sku : " + e.getMessage());
         }
         return requestRespondInbound;
     }
@@ -106,7 +105,6 @@ public class InboundService {
                     inbound.setDateReceived(new Date());
                 }
                 inbound.setInventory(optionalInventory.get());
-                inbound.setQuantity(inboundRegistrationRequest.getQuantity());
                 inbound.setQuantity(inboundRegistrationRequest.getQuantity());
                 inbound.setLocation(inboundRegistrationRequest.getLocation());
                 inbound.setRemarks(inboundRegistrationRequest.getRemarks());
@@ -159,7 +157,7 @@ public class InboundService {
             }
         } catch (Exception e) {
             requestRespondInbound.setStatusCode(500);
-            requestRespondInbound.setMessage("Error occurred while deleting user :" + e.getMessage());
+            requestRespondInbound.setMessage("Error occurred while deleting inbound :" + e.getMessage());
         }
         return requestRespondInbound;
     }
