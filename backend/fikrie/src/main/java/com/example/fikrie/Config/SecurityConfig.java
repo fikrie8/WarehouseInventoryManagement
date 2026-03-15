@@ -41,6 +41,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasAuthority("ADMIN")
                         .requestMatchers("/manager/**").hasAnyAuthority("MANAGER", "ADMIN")
                         .requestMatchers("/user/**").hasAnyAuthority("USER", "ADMIN", "MANAGER")
+                        .requestMatchers("/inventory/**").hasAnyAuthority("USER","MANAGER")
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .formLogin(httpSecurityFormLoginConfigurer -> httpSecurityFormLoginConfigurer.disable())
