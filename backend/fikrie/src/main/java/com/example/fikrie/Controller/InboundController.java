@@ -1,7 +1,6 @@
 package com.example.fikrie.Controller;
 
 import com.example.fikrie.DataTransferObject.RequestRespondInbound;
-import com.example.fikrie.DataTransferObject.RequestRespondInventory;
 import com.example.fikrie.Service.InboundService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
