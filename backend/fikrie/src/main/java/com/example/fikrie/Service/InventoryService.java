@@ -61,7 +61,6 @@ public class InventoryService {
             if(optionalInventory.isPresent()) {
                 Inventory inventory = getInventory(requestUpdateInventory, optionalInventory);
                 Inventory savedInventory = inventoryRepo.save(inventory);
-                requestRespondInventory.setName(savedInventory.getName());
                 requestRespondInventory.setInventory(savedInventory);
                 requestRespondInventory.setStatusCode(200);
                 requestRespondInventory.setMessage("Inventory updated successfully");
