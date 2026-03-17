@@ -12,6 +12,12 @@ target/
 .settings
 .springBeans
 .sts4-cache
+<<<<<<< HEAD
+=======
+id_ed25519
+*.key
+.env
+>>>>>>> master
 
 ### IntelliJ IDEA ###
 .idea

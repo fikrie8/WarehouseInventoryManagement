@@ -1,0 +1,109 @@
+/* src/App.css */
+
+/* 1. The Main Container */
+.login-page-container {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+                      url('https://www.hotwaxsystems.com/hubfs/Imported_Blog_Media/AdobeStock_459155812-scaled-3.jpeg');
+    
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;    /* Vertical Center */
+    justify-content: center; /* Horizontal Center */
+    margin: 0;
+    padding: 0;
+    position: fixed; /* Ensures it covers the whole screen */
+    top: 0;
+    left: 0;
+    flex-direction: column;
+}
+
+.main-title h1 {
+    text-shadow: 2px 2px 10px rgba(0,0,0,0.5); /* Makes title pop against image */
+    letter-spacing: 2px;
+}
+
+/* 2. The Modern Login Box */
+.auth-card {
+    width: 100%;
+    max-width: 450px;
+    background: rgba(255, 255, 255, 0.9); /* White with 90% transparency */
+    backdrop-filter: blur(10px); /* Blurs the background image behind the box */
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+/* 3. The Tabs Styling */
+.nav-tabs {
+    border-bottom: none;
+    background: #f8f9fa;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    padding: 1.2rem;
+    color: #6c757d;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.nav-tabs .nav-link.active {
+    background: white !important;
+    color: #0d6efd !important;
+    border-bottom: 3px solid #0d6efd !important;
+}
+
+/* 4. Inputs and Buttons */
+.form-control {
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.btn-primary {
+    border-radius: 8px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.custom-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7); /* Darkens background when popup shows */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.custom-modal-content {
+    width: 100%;
+    max-width: 350px;
+    background: white;
+    border-radius: 12px;
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.nav-pills .nav-link {
+    transition: all 0.2s ease-in-out;
+    border-radius: 8px;
+}
+
+.nav-pills .nav-link.active {
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
+}

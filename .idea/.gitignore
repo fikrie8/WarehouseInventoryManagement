@@ -1,3 +1,10 @@
 # Default ignored files
 /shelf/
 /workspace.xml
+<<<<<<< HEAD
+=======
+
+id_ed25519
+*.key
+.env
+>>>>>>> master
