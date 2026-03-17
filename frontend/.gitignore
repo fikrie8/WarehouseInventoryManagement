@@ -12,6 +12,8 @@ dist
 dist-ssr
 *.local
 .env
+id_ed25519
+*.key
 
 # Editor directories and files
 .vscode/*
