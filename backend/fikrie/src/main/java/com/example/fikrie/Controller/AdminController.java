@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:5173")
 @Slf4j
 @RequestMapping("/admin")
 public class AdminController {
@@ -21,9 +21,14 @@ public class AdminController {
         return ResponseEntity.ok(userService.getUserById(requestUserId));
     }
 
+    @GetMapping("/get-user-info/all")
+    public ResponseEntity<RequestRespondUser> getAllUserInfo() {
+        return ResponseEntity.ok(userService.getAllUserInfo());
+    }
+
     @PutMapping("/update-user")
     public ResponseEntity<RequestRespondUser> updateUser(@RequestBody RequestRespondUser requestUpdateUser) {
-        return ResponseEntity.ok(userService.updateUser(requestUpdateUser.getUsername(), requestUpdateUser.getUsers()));
+        return ResponseEntity.ok(userService.updateUser(requestUpdateUser.getUsername(), requestUpdateUser.getUser()));
     }
 
     @DeleteMapping("/delete-user/{requestDeleteId}")
