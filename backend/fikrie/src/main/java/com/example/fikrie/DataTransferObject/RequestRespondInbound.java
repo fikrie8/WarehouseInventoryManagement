@@ -25,5 +25,5 @@ public class RequestRespondInbound {
     private String remarks;
     private String message;
     private String error;
-    private List<Inbound> ListOfInbound;
+    private List<Inbound> listOfInbound;
 }

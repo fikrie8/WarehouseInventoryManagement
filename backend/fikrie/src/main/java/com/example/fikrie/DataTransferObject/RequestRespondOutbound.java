@@ -23,5 +23,5 @@ public class RequestRespondOutbound {
     private String message;
     private String error;
     private Inventory inventory;
-    private List<Outbound> ListOfOutbound;
+    private List<Outbound> listOfOutbound;
 }

@@ -16,11 +16,12 @@ public class RequestRespondUser {
     private String username;
     private String password;
     private String role;
+    private String email;
     private String refreshToken;
-    private String ExpirationTime;
+    private String expirationTime;
     private String token;
     private String message;
     private String error;
-    private Users users;
-    private List<Users> ListOfUsers;
+    private Users user;
+    private List<Users> listOfUsers;
 }
