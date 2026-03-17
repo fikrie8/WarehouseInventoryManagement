@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/inbound")
 public class InboundController {
 
@@ -29,7 +29,7 @@ public class InboundController {
         return ResponseEntity.ok(inboundService.getAllInbound());
     }
 
-    @PostMapping("register")
+    @PostMapping("/register")
     public ResponseEntity<RequestRespondInbound> registerInbound(@RequestBody RequestRespondInbound requestRespondInbound) {
         return ResponseEntity.ok(inboundService.registerInbound(requestRespondInbound));
     }

@@ -7,7 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/inventory")
 public class InventoryController {
 
@@ -19,7 +19,12 @@ public class InventoryController {
         return ResponseEntity.ok(inventoryService.getInventory(requestRespondInventory.getName()));
     }
 
-    @PostMapping("register-inventory")
+    @GetMapping("/get-all-inventory")
+    public ResponseEntity<RequestRespondInventory> getAllInventoryInfo() {
+        return ResponseEntity.ok(inventoryService.getAllInventory());
+    }
+
+    @PostMapping("/register-inventory")
     public ResponseEntity<RequestRespondInventory> getUserInfo(@RequestBody RequestRespondInventory requestRespondInventory) {
         return ResponseEntity.ok(inventoryService.register(requestRespondInventory));
     }

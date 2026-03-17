@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:5173")
 @Slf4j
 public class UserRegisterLoginController {
 
@@ -25,7 +25,7 @@ public class UserRegisterLoginController {
         return ResponseEntity.ok(userService.login(requestRespondUser));
     }
 
-    @PutMapping("reset-password")
+    @PutMapping("/reset-password")
     public ResponseEntity<RequestRespondUser> resetPassword(@RequestBody RequestRespondUser requestRespondUser) {
         return ResponseEntity.ok(userService.resetPassword(requestRespondUser));
     }
