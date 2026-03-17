@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -115,5 +116,19 @@ public class InventoryService {
             inventory.setSupplier(requestUpdateInventory.getSupplier());
         }
         return inventory;
+    }
+
+    public RequestRespondInventory getAllInventory() {
+        RequestRespondInventory requestRespondInventory = new RequestRespondInventory();
+        try {
+            List<Inventory> listOfInventory = inventoryRepo.findAll();
+            requestRespondInventory.setListOfInventory(listOfInventory);
+            requestRespondInventory.setStatusCode(200);
+            requestRespondInventory.setMessage("Inventory updated successfully");
+        } catch (Exception e) {
+            requestRespondInventory.setStatusCode(500);
+            requestRespondInventory.setMessage("Error occurred when updating inventory :" + e.getMessage());
+        }
+        return requestRespondInventory;
     }
 }

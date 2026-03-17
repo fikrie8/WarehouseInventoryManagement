@@ -13,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -38,9 +39,10 @@ public class UserService {
             user.setUsername(userRegistrationRequest.getUsername());
             user.setPassword(encoder.encode(userRegistrationRequest.getPassword()));
             user.setRole(userRegistrationRequest.getRole());
+            user.setEmail(userRegistrationRequest.getEmail());
             Users userRegistered = userRepo.save(user);
             if(userRegistered.getId() > 0) {
-                requestRespondUser.setUsers(userRegistered);
+                requestRespondUser.setUser(userRegistered);
                 requestRespondUser.setStatusCode(200);
                 requestRespondUser.setMessage("User has been registered successfully");
             }
@@ -56,22 +58,26 @@ public class UserService {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(userLoginRequest.getUsername(), userLoginRequest.getPassword()));
-            Optional<Users> optionalUsers = userRepo.findByUsername(userLoginRequest.getUsername());
-            if(optionalUsers.isPresent()) {
-                var user = optionalUsers.get();
-                UserPrinciple userPrinciple = new UserPrinciple(user);
-                var jwtToken = jwtService.generateToken(user.getUsername());
-                var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), userPrinciple);
-                requestRespondUser.setStatusCode(200);
-                requestRespondUser.setToken(jwtToken);
-                requestRespondUser.setUsername(user.getUsername());
-                requestRespondUser.setRole(user.getRole());
-                requestRespondUser.setRefreshToken(refreshToken);
-                requestRespondUser.setExpirationTime("24Hrs");
-                requestRespondUser.setMessage("Successfully Logged In");
-            } else {
-                requestRespondUser.setStatusCode(404);
-                requestRespondUser.setMessage("User not found");
+            if(authentication.isAuthenticated()) {
+                Optional<Users> optionalUsers = userRepo.findByUsername(userLoginRequest.getUsername());
+                if(optionalUsers.isPresent()) {
+                    var user = optionalUsers.get();
+                    UserPrinciple userPrinciple = new UserPrinciple(user);
+                    var jwtToken = jwtService.generateToken(user.getUsername());
+                    var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), userPrinciple);
+                    requestRespondUser.setStatusCode(200);
+                    requestRespondUser.setToken(jwtToken);
+                    requestRespondUser.setUsername(user.getUsername());
+                    requestRespondUser.setRole(user.getRole());
+                    requestRespondUser.setEmail(user.getEmail());
+                    requestRespondUser.setRefreshToken(refreshToken);
+                    requestRespondUser.setUser(user);
+                    requestRespondUser.setExpirationTime("24Hrs");
+                    requestRespondUser.setMessage("Successfully Logged In");
+                } else {
+                    requestRespondUser.setStatusCode(404);
+                    requestRespondUser.setMessage("User not found");
+                }
             }
         } catch (Exception e) {
             requestRespondUser.setStatusCode(500);
@@ -90,7 +96,7 @@ public class UserService {
                     userToResetPassword.setPassword(encoder.encode(requestRespondUserResetPassword.getPassword()));
                 }
                 Users savedUser = userRepo.save(userToResetPassword);
-                requestRespondUser.setUsers(savedUser);
+                requestRespondUser.setUser(savedUser);
                 requestRespondUser.setStatusCode(200);
                 requestRespondUser.setMessage("User's password reset successfully");
             } else {
@@ -110,7 +116,7 @@ public class UserService {
             Optional<Users> optionalUsers = userRepo.findByUsername(requestUsername);
             if (optionalUsers.isPresent()) {
                 Users users = optionalUsers.get();
-                requestRespondUser.setUsers(users);
+                requestRespondUser.setUser(users);
                 requestRespondUser.setStatusCode(200);
                 requestRespondUser.setMessage("User with username : " + requestUsername + " found successfully");
             } else {
@@ -128,7 +134,7 @@ public class UserService {
         RequestRespondUser requestRespondUser = new RequestRespondUser();
         try {
             Users userById = userRepo.findById(requestUserById).orElseThrow(()-> new RuntimeException("User not found"));
-            requestRespondUser.setUsers(userById);
+            requestRespondUser.setUser(userById);
             requestRespondUser.setStatusCode(200);
             requestRespondUser.setMessage("User with id : " + requestUserById + " found successfully");
         } catch (Exception e) {
@@ -138,15 +144,29 @@ public class UserService {
         return requestRespondUser;
     }
 
-    public RequestRespondUser updateUser(String username, Users requestUpdateUser) {
+    public RequestRespondUser getAllUserInfo() {
         RequestRespondUser requestRespondUser = new RequestRespondUser();
         try {
-            Optional<Users> optionalUser = userRepo.findByUsername(username);
+            List<Users> listOfUsers = userRepo.findAll();
+            requestRespondUser.setListOfUsers(listOfUsers);
+            requestRespondUser.setStatusCode(200);
+            requestRespondUser.setMessage("List of users found successfully");
+        } catch (Exception e) {
+            requestRespondUser.setStatusCode(500);
+            requestRespondUser.setMessage("Error occurred when getting user by id : " + e.getMessage());
+        }
+        return requestRespondUser;
+    }
+
+    public RequestRespondUser updateUser(String oldUsername, Users requestUpdateUser) {
+        RequestRespondUser requestRespondUser = new RequestRespondUser();
+        try {
+            Optional<Users> optionalUser = userRepo.findByUsername(oldUsername);
             if(optionalUser.isPresent()) {
                 Users user = getUser(requestUpdateUser, optionalUser);
                 Users savedUser = userRepo.save(user);
                 requestRespondUser.setUsername(savedUser.getUsername());
-                requestRespondUser.setUsers(savedUser);
+                requestRespondUser.setUser(savedUser);
                 requestRespondUser.setStatusCode(200);
                 requestRespondUser.setMessage("User updated successfully");
             } else {
@@ -186,6 +206,9 @@ public class UserService {
         }
         if(Objects.nonNull(requestUpdateUser.getPassword()) && !requestUpdateUser.getPassword().isEmpty()) {
             user.setPassword(encoder.encode(requestUpdateUser.getPassword()));
+        }
+        if(Objects.nonNull(requestUpdateUser.getEmail()) && !requestUpdateUser.getEmail().isEmpty()) {
+            user.setEmail(requestUpdateUser.getEmail());
         }
         return user;
     }
