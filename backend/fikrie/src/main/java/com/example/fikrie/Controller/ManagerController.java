@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:5173")
 @Slf4j
 @RequestMapping("/manager")
 public class ManagerController {
@@ -16,18 +16,18 @@ public class ManagerController {
     @Autowired
     private UserService userService;
 
-    @GetMapping("/get-user-info")
-    public ResponseEntity<RequestRespondUser> getUserInfo(@RequestBody RequestRespondUser requestRespondUser) {
-        return ResponseEntity.ok(userService.getUserProfile(requestRespondUser.getUsers().getUsername()));
-    }
-
     @GetMapping("/get-user-info/{requestUserId}")
     public ResponseEntity<RequestRespondUser> getUserInfoById(@PathVariable(required = true) Integer requestUserId) {
         return ResponseEntity.ok(userService.getUserById(requestUserId));
     }
 
+    @GetMapping("/get-user-info/all")
+    public ResponseEntity<RequestRespondUser> getAllUserInfo() {
+        return ResponseEntity.ok(userService.getAllUserInfo());
+    }
+
     @PutMapping("/update-user")
     public ResponseEntity<RequestRespondUser> updateUser(@RequestBody RequestRespondUser requestUpdateUser) {
-        return ResponseEntity.ok(userService.updateUser(requestUpdateUser.getUsername(), requestUpdateUser.getUsers()));
+        return ResponseEntity.ok(userService.updateUser(requestUpdateUser.getUsername(), requestUpdateUser.getUser()));
     }
 }
