@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="dbb1089b-7224-4b2b-9ee1-e1a6ceda0858" name="Changes" comment="fixed some checking if user admin exist.">
+      <change beforePath="$PROJECT_DIR$/fikrie/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/fikrie/src/main/resources/application.properties" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "fikrie8"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "git@github.com:fikrie8/WarehouseInventoryManagement.git",
+    "accountId": "19d14893-1405-4b11-8b68-a1df030bacaf"
+  }
+}]]></component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 0
+}]]></component>
+  <component name="ProjectId" id="3B1uiyJz0A2NfByErWhOnBNyOY0" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.WarehouseInventoryManagerApplication.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "settings.editor.selected.configurable": "build.tools"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration name="WarehouseInventoryManagerApplication" type="Application" factoryName="Application" nameIsGenerated="true">
+      <envs>
+        <env name="ADMIN_EMAIL" value="admin@gmail.com" />
+        <env name="ADMIN_PASSWORD" value="@dmin" />
+      </envs>
+      <option name="MAIN_CLASS_NAME" value="com.example.fikrie.WarehouseInventoryManagerApplication" />
+      <module name="fikrie" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.example.fikrie.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="dbb1089b-7224-4b2b-9ee1-e1a6ceda0858" name="Changes" comment="" />
+      <created>1773669029136</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1773669029136</updated>
+    </task>
+    <task id="LOCAL-00001" summary="Add email to information. Set the admin email to be retrieve from environment variable.">
+      <option name="closed" value="true" />
+      <created>1773736501568</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1773736501568</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Add email to the DataTransfer. Rename some variable because it causes confusion.">
+      <option name="closed" value="true" />
+      <created>1773736562325</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1773736562325</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Change myUserDetailService to be injected instead of using applicationContext.getBean.">
+      <option name="closed" value="true" />
+      <created>1773736685065</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1773736685065</updated>
+    </task>
+    <task id="LOCAL-00004" summary="change GetMapping for /get-user-info. Should just retrieve id. Add the CrossOrigin path.">
+      <option name="closed" value="true" />
+      <created>1773736828100</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1773736828100</updated>
+    </task>
+    <task id="LOCAL-00005" summary="fixed some missing / from Mapping. @CrossOrigin path.">
+      <option name="closed" value="true" />
+      <created>1773737001208</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1773737001208</updated>
+    </task>
+    <task id="LOCAL-00006" summary="fixed the statusCode that should be returned if inbound or outbound failed to be registered.">
+      <option name="closed" value="true" />
+      <created>1773737056946</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1773737056946</updated>
+    </task>
+    <task id="LOCAL-00007" summary="add function to get all inventory and user.">
+      <option name="closed" value="true" />
+      <created>1773737096611</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1773737096611</updated>
+    </task>
+    <task id="LOCAL-00008" summary="fixed some checking if user admin exist.">
+      <option name="closed" value="true" />
+      <created>1773738642603</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1773738642603</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Add email to information. Set the admin email to be retrieve from environment variable." />
+    <MESSAGE value="Add email to the DataTransfer. Rename some variable because it causes confusion." />
+    <MESSAGE value="Change myUserDetailService to be injected instead of using applicationContext.getBean." />
+    <MESSAGE value="change GetMapping for /get-user-info. Should just retrieve id. Add the CrossOrigin path." />
+    <MESSAGE value="fixed some missing / from Mapping. @CrossOrigin path." />
+    <MESSAGE value="fixed the statusCode that should be returned if inbound or outbound failed to be registered." />
+    <MESSAGE value="add function to get all inventory and user." />
+    <MESSAGE value="fixed some checking if user admin exist." />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed some checking if user admin exist." />
+  </component>
+</project>
