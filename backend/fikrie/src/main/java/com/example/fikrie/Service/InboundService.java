@@ -92,7 +92,7 @@ public class InboundService {
             Optional<Inventory> optionalInventory = inventoryRepo.findBySku(inboundRegistrationRequest.getProductSku());
             if(optionalInventory.isPresent()) {
                 Inbound inbound = new Inbound();
-                if(Objects.nonNull(requestRespondInbound.getReference()) && !requestRespondInbound.getReference().isEmpty()) {
+                if(Objects.nonNull(inboundRegistrationRequest.getReference()) && !inboundRegistrationRequest.getReference().isEmpty()) {
                     inbound.setReference(inboundRegistrationRequest.getReference());
                 } else {
                     long nextId = inboundRepo.count() + 1;
@@ -112,6 +112,9 @@ public class InboundService {
                 if(inboundRegistered.getId() > 0) {
                     requestRespondInbound.setStatusCode(200);
                     requestRespondInbound.setMessage("Inbound has been registered successfully");
+                } else {
+                    requestRespondInbound.setStatusCode(400);
+                    requestRespondInbound.setMessage("Inbound failed to register. Maybe wrong SKU");
                 }
             }
         } catch (Exception e) {

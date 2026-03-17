@@ -115,6 +115,9 @@ public class OutboundService {
                 if(outboundRegistered.getId() > 0) {
                     requestRespondOutbound.setStatusCode(200);
                     requestRespondOutbound.setMessage("Outbound has been registered successfully");
+                } else {
+                    requestRespondOutbound.setStatusCode(400);
+                    requestRespondOutbound.setMessage("Outbound failed to register. Maybe wrong SKU");
                 }
             }
         } catch (Exception e) {
