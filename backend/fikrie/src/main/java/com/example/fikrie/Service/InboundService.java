@@ -6,8 +6,8 @@ import com.example.fikrie.Model.Inventory;
 import com.example.fikrie.Repository.InboundRepo;
 import com.example.fikrie.Repository.InventoryRepo;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -17,16 +17,11 @@ import java.util.Optional;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class InboundService {
 
-    @Autowired
-    InboundRepo inboundRepo;
-
-    @Autowired
-    InventoryRepo inventoryRepo;
-
-    @Autowired
-    InventoryService inventoryService;
+    private final InboundRepo inboundRepo;
+    private final InventoryRepo inventoryRepo;
 
     public RequestRespondInbound getInboundByReference(String requestInboundReference) {
         RequestRespondInbound requestRespondInbound = new RequestRespondInbound();

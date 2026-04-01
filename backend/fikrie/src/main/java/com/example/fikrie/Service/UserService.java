@@ -4,8 +4,8 @@ import com.example.fikrie.DataTransferObject.RequestRespondUser;
 import com.example.fikrie.Model.UserPrinciple;
 import com.example.fikrie.Model.Users;
 import com.example.fikrie.Repository.UserRepo;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -19,17 +19,12 @@ import java.util.Optional;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserService {
 
-    @Autowired
-    private UserRepo userRepo;
-
-    @Autowired
-    JwtService jwtService;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
+    private final UserRepo userRepo;
+    private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
     private BCryptPasswordEncoder encoder =new BCryptPasswordEncoder(12);
 
     public RequestRespondUser register(RequestRespondUser userRegistrationRequest) {

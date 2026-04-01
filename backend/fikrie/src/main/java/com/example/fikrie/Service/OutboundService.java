@@ -1,16 +1,13 @@
 package com.example.fikrie.Service;
 
-import com.example.fikrie.DataTransferObject.RequestRespondInbound;
 import com.example.fikrie.DataTransferObject.RequestRespondOutbound;
-import com.example.fikrie.Model.Inbound;
 import com.example.fikrie.Model.Inventory;
 import com.example.fikrie.Model.Outbound;
-import com.example.fikrie.Repository.InboundRepo;
 import com.example.fikrie.Repository.InventoryRepo;
 import com.example.fikrie.Repository.OutboundRepo;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -20,16 +17,11 @@ import java.util.Optional;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class OutboundService {
 
-    @Autowired
-    OutboundRepo outboundRepo;
-
-    @Autowired
-    InventoryRepo inventoryRepo;
-
-    @Autowired
-    InventoryService inventoryService;
+    private final OutboundRepo outboundRepo;
+    private final InventoryRepo inventoryRepo;
 
     public RequestRespondOutbound getOutboundByReference(String requestOutboundReference) {
         RequestRespondOutbound requestRespondOutbound = new RequestRespondOutbound();

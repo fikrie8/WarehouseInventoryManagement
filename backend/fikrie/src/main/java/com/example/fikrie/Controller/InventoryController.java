@@ -2,17 +2,17 @@ package com.example.fikrie.Controller;
 
 import com.example.fikrie.DataTransferObject.RequestRespondInventory;
 import com.example.fikrie.Service.InventoryService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/inventory")
+@RequiredArgsConstructor
 public class InventoryController {
 
-    @Autowired
-    InventoryService inventoryService;
+    private final InventoryService inventoryService;
 
     @GetMapping("/get-inventory")
     public ResponseEntity<RequestRespondInventory> getInventoryInfo(@RequestBody RequestRespondInventory requestRespondInventory) {

@@ -3,8 +3,8 @@ package com.example.fikrie.Service;
 import com.example.fikrie.DataTransferObject.RequestRespondInventory;
 import com.example.fikrie.Model.Inventory;
 import com.example.fikrie.Repository.InventoryRepo;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,10 +13,10 @@ import java.util.Optional;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class InventoryService {
 
-    @Autowired
-    InventoryRepo inventoryRepo;
+    private final InventoryRepo inventoryRepo;
 
     public RequestRespondInventory getInventory(String requestInventoryName) {
         RequestRespondInventory requestRespondInventory = new RequestRespondInventory();

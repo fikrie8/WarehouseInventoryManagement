@@ -2,8 +2,8 @@ package com.example.fikrie.Controller;
 
 import com.example.fikrie.DataTransferObject.RequestRespondUser;
 import com.example.fikrie.Service.UserService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "http://localhost:5173")
 @Slf4j
 @RequestMapping("/admin")
+@RequiredArgsConstructor
 public class AdminController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @GetMapping("/get-user-info/{requestUserId}")
     public ResponseEntity<RequestRespondUser> getUserInfoById(@PathVariable(required = true) Integer requestUserId) {

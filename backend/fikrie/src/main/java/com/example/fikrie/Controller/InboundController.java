@@ -2,17 +2,17 @@ package com.example.fikrie.Controller;
 
 import com.example.fikrie.DataTransferObject.RequestRespondInbound;
 import com.example.fikrie.Service.InboundService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:5173")
 @RequestMapping("/inbound")
+@RequiredArgsConstructor
 public class InboundController {
 
-    @Autowired
-    InboundService inboundService;
+    private final InboundService inboundService;
 
     @GetMapping("/get-by-reference")
     public ResponseEntity<RequestRespondInbound> getInboundByReference(@RequestBody RequestRespondInbound requestRespondInbound) {
