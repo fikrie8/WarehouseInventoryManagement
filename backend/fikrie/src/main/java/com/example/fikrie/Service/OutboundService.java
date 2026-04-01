@@ -8,6 +8,7 @@ import com.example.fikrie.Model.Outbound;
 import com.example.fikrie.Repository.InboundRepo;
 import com.example.fikrie.Repository.InventoryRepo;
 import com.example.fikrie.Repository.OutboundRepo;
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,9 @@ public class OutboundService {
 
     @Autowired
     InventoryRepo inventoryRepo;
+
+    @Autowired
+    InventoryService inventoryService;
 
     public RequestRespondOutbound getOutboundByReference(String requestOutboundReference) {
         RequestRespondOutbound requestRespondOutbound = new RequestRespondOutbound();
@@ -89,11 +93,12 @@ public class OutboundService {
         return requestRespondOutbound;
     }
 
+    @Transactional
     public RequestRespondOutbound registerOutbound(RequestRespondOutbound outboundRegistrationRequest) {
         RequestRespondOutbound requestRespondOutbound = new RequestRespondOutbound();
         try {
             Optional<Inventory> optionalInventory = inventoryRepo.findBySku(outboundRegistrationRequest.getProductSku());
-            if(optionalInventory.isPresent()) {
+            if(optionalInventory.isPresent() && (optionalInventory.get().getQuantity() > outboundRegistrationRequest.getQuantity())) {
                 Outbound outbound = new Outbound();
                 if(Objects.nonNull(outboundRegistrationRequest.getReference()) && !outboundRegistrationRequest.getReference().isEmpty()) {
                     outbound.setReference(outboundRegistrationRequest.getReference());
@@ -113,11 +118,25 @@ public class OutboundService {
                 outbound.setRemarks(outboundRegistrationRequest.getRemarks());
                 Outbound outboundRegistered = outboundRepo.save(outbound);
                 if(outboundRegistered.getId() > 0) {
-                    requestRespondOutbound.setStatusCode(200);
-                    requestRespondOutbound.setMessage("Outbound has been registered successfully");
+                    Inventory updatedInventory = new Inventory();
+                    updatedInventory.setId(optionalInventory.get().getId());
+                    updatedInventory.setSku(optionalInventory.get().getSku());
+                    updatedInventory.setCategory(optionalInventory.get().getCategory());
+                    updatedInventory.setName(optionalInventory.get().getName());
+                    updatedInventory.setLocation(optionalInventory.get().getLocation());
+                    updatedInventory.setQuantity(optionalInventory.get().getQuantity() + outboundRegistered.getQuantity());
+                    updatedInventory.setSupplier(optionalInventory.get().getSupplier());
+                    Inventory inventoryRegistered = inventoryRepo.save(updatedInventory);
+                    if(inventoryRegistered.getId() > 0) {
+                        requestRespondOutbound.setStatusCode(200);
+                        requestRespondOutbound.setMessage("Outbound has been registered successfully");
+                    } else {
+                        requestRespondOutbound.setStatusCode(400);
+                        requestRespondOutbound.setMessage("Outbound failed to register. Something wrong when calling the repository save");
+                    }
                 } else {
                     requestRespondOutbound.setStatusCode(400);
-                    requestRespondOutbound.setMessage("Outbound failed to register. Maybe wrong SKU");
+                    requestRespondOutbound.setMessage("Outbound failed to register. Maybe wrong SKU or quantity exceed the limit");
                 }
             }
         } catch (Exception e) {

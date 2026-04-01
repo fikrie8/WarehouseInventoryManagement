@@ -117,18 +117,4 @@ public class InventoryService {
         }
         return inventory;
     }
-
-    public RequestRespondInventory getAllInventory() {
-        RequestRespondInventory requestRespondInventory = new RequestRespondInventory();
-        try {
-            List<Inventory> listOfInventory = inventoryRepo.findAll();
-            requestRespondInventory.setListOfInventory(listOfInventory);
-            requestRespondInventory.setStatusCode(200);
-            requestRespondInventory.setMessage("Inventory updated successfully");
-        } catch (Exception e) {
-            requestRespondInventory.setStatusCode(500);
-            requestRespondInventory.setMessage("Error occurred when updating inventory :" + e.getMessage());
-        }
-        return requestRespondInventory;
-    }
 }
