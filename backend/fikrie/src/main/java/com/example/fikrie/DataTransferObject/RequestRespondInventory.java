@@ -22,5 +22,5 @@ public class RequestRespondInventory {
     private String message;
     private String error;
     private Inventory inventory;
-    private List<Inventory> listOfInventory;
+    private List<InventoryDTO> listOfInventoryDTO;
 }

@@ -83,15 +83,14 @@ public class InventoryService {
 
     public RequestRespondInventory getAllInventory() {
         RequestRespondInventory requestRespondInventory = new RequestRespondInventory();
-        try {
-            List<Inventory> listOfInventory = inventoryRepo.findAll();
-            requestRespondInventory.setListOfInventory(listOfInventory);
-            requestRespondInventory.setStatusCode(200);
-            requestRespondInventory.setMessage("Inventory updated successfully");
-        } catch (Exception e) {
-            requestRespondInventory.setStatusCode(500);
-            requestRespondInventory.setMessage("Error occurred when updating inventory :" + e.getMessage());
+        List<InventoryDTO> listOfInventoryDTO = inventoryRepo.findAllBy();
+        if(listOfInventoryDTO.isEmpty()) {
+           throw new ResourceNotFoundException("getAllInventory failed: No inventory records is found in the system.");
         }
+        requestRespondInventory.setListOfInventoryDTO(listOfInventoryDTO);
+        requestRespondInventory.setStatusCode(200);
+        requestRespondInventory.setMessage("Inventory updated successfully");
+
         return requestRespondInventory;
     }
 
