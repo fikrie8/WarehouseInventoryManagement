@@ -9,6 +9,6 @@ import java.util.Optional;
 @Repository
 public interface InventoryRepo extends JpaRepository<Inventory, Integer> {
 
-    Inventory findByName(String name);
+    Optional<Inventory> findByName(String name);
     Optional<Inventory> findBySku(String sku);
 }

@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -29,22 +28,17 @@ public class UserService {
 
     public RequestRespondUser register(RequestRespondUser userRegistrationRequest) {
         RequestRespondUser requestRespondUser = new RequestRespondUser();
-        try {
-            Users user = new Users();
-            user.setUsername(userRegistrationRequest.getUsername());
-            user.setPassword(encoder.encode(userRegistrationRequest.getPassword()));
-            user.setRole(userRegistrationRequest.getRole());
-            user.setEmail(userRegistrationRequest.getEmail());
-            Users userRegistered = userRepo.save(user);
-            if(userRegistered.getId() > 0) {
-                requestRespondUser.setUser(userRegistered);
-                requestRespondUser.setStatusCode(200);
-                requestRespondUser.setMessage("User has been registered successfully");
-            }
-        } catch (Exception e) {
-            requestRespondUser.setStatusCode(500);
-            requestRespondUser.setMessage(e.getMessage());
-        }
+        Users user = new Users();
+        user.setUsername(userRegistrationRequest.getUsername());
+        user.setPassword(encoder.encode(userRegistrationRequest.getPassword()));
+        user.setRole(userRegistrationRequest.getRole());
+        user.setEmail(userRegistrationRequest.getEmail());
+        Users userRegistered = userRepo.save(user);
+
+        requestRespondUser.setUser(userRegistered);
+        requestRespondUser.setStatusCode(200);
+        requestRespondUser.setMessage("User has been registered successfully");
+
         return requestRespondUser;
     }
 
@@ -54,7 +48,6 @@ public class UserService {
                 new UsernamePasswordAuthenticationToken(userLoginRequest.getUsername(), userLoginRequest.getPassword()));
         Users user = userRepo.findByUsername(userLoginRequest.getUsername())
                                 .orElseThrow(() -> new UsernameNotFoundException("User record not found in system : " + userLoginRequest.getUsername()));
-
         UserPrinciple userPrinciple = new UserPrinciple(user);
         var jwtToken = jwtService.generateToken(user.getUsername());
         var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), userPrinciple);
@@ -74,73 +67,70 @@ public class UserService {
 
     public RequestRespondUser resetPassword(RequestRespondUser requestRespondUserResetPassword) {
         RequestRespondUser requestRespondUser = new RequestRespondUser();
-        try{
-            Optional<Users> optionalUsers = userRepo.findByUsername(requestRespondUserResetPassword.getUsername());
-            if(optionalUsers.isPresent()) {
-                Users userToResetPassword = optionalUsers.get();
-                if(Objects.nonNull(requestRespondUserResetPassword.getPassword()) && !requestRespondUserResetPassword.getPassword().isEmpty()) {
-                    userToResetPassword.setPassword(encoder.encode(requestRespondUserResetPassword.getPassword()));
-                }
-                Users savedUser = userRepo.save(userToResetPassword);
-                requestRespondUser.setUser(savedUser);
-                requestRespondUser.setStatusCode(200);
-                requestRespondUser.setMessage("User's password reset successfully");
-            } else {
-                requestRespondUser.setStatusCode(404);
-                requestRespondUser.setMessage("User not found for reset-password");
-            }
-        } catch (Exception e) {
-            requestRespondUser.setStatusCode(500);
-            requestRespondUser.setMessage("Error occurred when resetting user's password :" + e.getMessage());
+        Users userToResetPassword = userRepo.findByUsername(requestRespondUserResetPassword.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found in system for reset-password : " + requestRespondUser.getUsername()));
+        if(Objects.nonNull(requestRespondUserResetPassword.getPassword()) && !requestRespondUserResetPassword.getPassword().isEmpty()) {
+            userToResetPassword.setPassword(encoder.encode(requestRespondUserResetPassword.getPassword()));
         }
+        Users user = userRepo.save(userToResetPassword);
+
+        requestRespondUser.setUser(user);
+        requestRespondUser.setStatusCode(200);
+        requestRespondUser.setMessage("User's password reset successfully");
+
         return requestRespondUser;
     }
 
     public RequestRespondUser getUserProfile(String requestUsername) {
         RequestRespondUser requestRespondUser = new RequestRespondUser();
-        try {
-            Optional<Users> optionalUsers = userRepo.findByUsername(requestUsername);
-            if (optionalUsers.isPresent()) {
-                Users users = optionalUsers.get();
-                requestRespondUser.setUser(users);
-                requestRespondUser.setStatusCode(200);
-                requestRespondUser.setMessage("User with username : " + requestUsername + " found successfully");
-            } else {
-                requestRespondUser.setStatusCode(404);
-                requestRespondUser.setMessage("Username not found");
-            }
-        } catch (Exception e) {
-            requestRespondUser.setStatusCode(500);
-            requestRespondUser.setMessage("Error occurred when getting user by id : " + e.getMessage());
-        }
+        Users users = userRepo.findByUsername(requestUsername)
+                            .orElseThrow(() -> new UsernameNotFoundException("Username not found: " + requestUsername));
+
+        requestRespondUser.setUser(users);
+        requestRespondUser.setStatusCode(200);
+        requestRespondUser.setMessage("User with username : " + requestUsername + " found successfully");
+
         return requestRespondUser;
     }
 
     public RequestRespondUser getUserById(Integer requestUserById) {
         RequestRespondUser requestRespondUser = new RequestRespondUser();
-        try {
-            Users userById = userRepo.findById(requestUserById).orElseThrow(()-> new RuntimeException("User not found"));
-            requestRespondUser.setUser(userById);
-            requestRespondUser.setStatusCode(200);
-            requestRespondUser.setMessage("User with id : " + requestUserById + " found successfully");
-        } catch (Exception e) {
-            requestRespondUser.setStatusCode(500);
-            requestRespondUser.setMessage("Error occurred when getting user by id : " + e.getMessage());
-        }
+        Users userById = userRepo.findById(requestUserById)
+                                .orElseThrow(()-> new UsernameNotFoundException("User not found with ID : " + requestUserById));
+
+        requestRespondUser.setUser(userById);
+        requestRespondUser.setStatusCode(200);
+        requestRespondUser.setMessage("User with id : " + requestUserById + " found successfully");
+
         return requestRespondUser;
     }
 
     public RequestRespondUser getAllUserInfo() {
         RequestRespondUser requestRespondUser = new RequestRespondUser();
-        try {
-            List<Users> listOfUsers = userRepo.findAll();
-            requestRespondUser.setListOfUsers(listOfUsers);
-            requestRespondUser.setStatusCode(200);
-            requestRespondUser.setMessage("List of users found successfully");
-        } catch (Exception e) {
-            requestRespondUser.setStatusCode(500);
-            requestRespondUser.setMessage("Error occurred when getting user by id : " + e.getMessage());
-        }
+        List<Users> listOfUsers = userRepo.findAll();
+
+        requestRespondUser.setListOfUsers(listOfUsers);
+        requestRespondUser.setStatusCode(200);
+        requestRespondUser.setMessage("List of users found successfully");
+
+        return requestRespondUser;
+    }
+
+    public RequestRespondUser updateUser(String username, Users requestUpdateUser) {
+        RequestRespondUser requestRespondUser = new RequestRespondUser();
+        Users oldUser = userRepo.findByUsername(username)
+                            .orElseThrow(()-> new UsernameNotFoundException("User not found for update : " + username));
+
+        Users newUpdatedUser = checkUserNewInformation(requestUpdateUser, oldUser);
+        Users savedUser = userRepo.save(newUpdatedUser);
+        requestRespondUser.setUsername(savedUser.getUsername());
+        requestRespondUser.setFirstName(savedUser.getFirstName());
+        requestRespondUser.setLastName(savedUser.getLastName());
+        requestRespondUser.setEmail(savedUser.getEmail());
+        requestRespondUser.setUser(savedUser);
+        requestRespondUser.setStatusCode(200);
+        requestRespondUser.setMessage("User updated successfully");
+
         return requestRespondUser;
     }
 
@@ -168,20 +158,23 @@ public class UserService {
 
     public RequestRespondUser deleteUser(Integer requestUserById) {
         RequestRespondUser requestRespondUser = new RequestRespondUser();
-        try {
-            Optional<Users> usersOptional = userRepo.findById(requestUserById);
-            if(usersOptional.isPresent()) {
-                userRepo.deleteById(requestUserById);
-                requestRespondUser.setStatusCode(200);
-                requestRespondUser.setMessage("User successfully deleted");
-            } else {
-                requestRespondUser.setStatusCode(404);
-                requestRespondUser.setMessage("User not found for deletion");
-            }
-        } catch (Exception e) {
-            requestRespondUser.setStatusCode(500);
-            requestRespondUser.setMessage("Error occurred while deleting user :" + e.getMessage());
+
+        /*
+           Performance Wise: Instead of using the commented code, the one that I wrote use a faster index verification.
+           No entity mapping overhead!
+
+           userRepo.findById(requestUserById)
+                .orElseThrow(()-> new UsernameNotFoundException("username not found for delete : " + requestUserById));
+        */
+
+        if (!userRepo.existsById(requestUserById)) {
+            throw new UsernameNotFoundException("User id not found for deletion : " + requestUserById);
         }
+
+        userRepo.deleteById(requestUserById);
+        requestRespondUser.setStatusCode(200);
+        requestRespondUser.setMessage("User successfully deleted");
+
         return requestRespondUser;
     }
 

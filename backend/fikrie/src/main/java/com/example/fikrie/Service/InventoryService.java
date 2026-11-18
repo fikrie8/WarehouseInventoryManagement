@@ -1,6 +1,8 @@
 package com.example.fikrie.Service;
 
+import com.example.fikrie.DataTransferObject.InventoryDTO;
 import com.example.fikrie.DataTransferObject.RequestRespondInventory;
+import com.example.fikrie.Exception.ResourceNotFoundException;
 import com.example.fikrie.Model.Inventory;
 import com.example.fikrie.Repository.InventoryRepo;
 import lombok.RequiredArgsConstructor;
@@ -20,15 +22,12 @@ public class InventoryService {
 
     public RequestRespondInventory getInventory(String requestInventoryName) {
         RequestRespondInventory requestRespondInventory = new RequestRespondInventory();
-        try {
-            Inventory inventory = inventoryRepo.findByName(requestInventoryName);
-            requestRespondInventory.setInventory(inventory);
-            requestRespondInventory.setStatusCode(200);
-            requestRespondInventory.setMessage("Inventory with name : " + requestInventoryName + " found successfully");
-        } catch (Exception e) {
-            requestRespondInventory.setStatusCode(500);
-            requestRespondInventory.setMessage("Error occurred when getting inventory by name : " + e.getMessage());
-        }
+        Inventory inventory = inventoryRepo.findByName(requestInventoryName)
+                .orElseThrow(() -> new ResourceNotFoundException("getInventory failed: Inventory not found with name: " + requestInventoryName));
+        requestRespondInventory.setInventory(inventory);
+        requestRespondInventory.setStatusCode(200);
+        requestRespondInventory.setMessage("Inventory with name : " + requestInventoryName + " found successfully");
+
         return requestRespondInventory;
     }
 
@@ -57,41 +56,27 @@ public class InventoryService {
 
     public RequestRespondInventory updateInventory(String sku, Inventory requestUpdateInventory) {
         RequestRespondInventory requestRespondInventory = new RequestRespondInventory();
-        try {
-            Optional<Inventory> optionalInventory = inventoryRepo.findBySku(sku);
-            if(optionalInventory.isPresent()) {
-                Inventory inventory = getInventory(requestUpdateInventory, optionalInventory);
-                Inventory savedInventory = inventoryRepo.save(inventory);
-                requestRespondInventory.setInventory(savedInventory);
-                requestRespondInventory.setStatusCode(200);
-                requestRespondInventory.setMessage("Inventory updated successfully");
-            } else {
-                requestRespondInventory.setStatusCode(404);
-                requestRespondInventory.setMessage("Inventory not found for update");
-            }
-        } catch (Exception e) {
-            requestRespondInventory.setStatusCode(500);
-            requestRespondInventory.setMessage("Error occurred when updating inventory :" + e.getMessage());
-        }
+
+            Inventory inventoryInDb = inventoryRepo.findBySku(sku)
+                    .orElseThrow(() -> new ResourceNotFoundException("updateInventory failed: Inventory not found by SKU: " + sku));
+
+            Inventory updatedinventory = getInventoryFields(requestUpdateInventory, inventoryInDb);
+            Inventory savedInventory = inventoryRepo.save(updatedinventory);
+            requestRespondInventory.setInventory(savedInventory);
+            requestRespondInventory.setStatusCode(200);
+            requestRespondInventory.setMessage("Inventory updated successfully");
+
         return requestRespondInventory;
     }
 
     public RequestRespondInventory deleteInventory(Integer requestInventoryById) {
         RequestRespondInventory requestRespondInventory = new RequestRespondInventory();
-        try {
-            Optional<Inventory> inventoryOptional = inventoryRepo.findById(requestInventoryById);
-            if(inventoryOptional.isPresent()) {
-                inventoryRepo.deleteById(requestInventoryById);
-                requestRespondInventory.setStatusCode(200);
-                requestRespondInventory.setMessage("Inventory successfully deleted");
-            } else {
-                requestRespondInventory.setStatusCode(404);
-                requestRespondInventory.setMessage("Inventory not found for deletion");
-            }
-        } catch (Exception e) {
-            requestRespondInventory.setStatusCode(500);
-            requestRespondInventory.setMessage("Error occurred while deleting user :" + e.getMessage());
-        }
+        Inventory inventory = inventoryRepo.findById(requestInventoryById)
+                .orElseThrow(() -> new ResourceNotFoundException("deleteInventory failed: Inventory not found by Id: " + requestInventoryById));
+        inventoryRepo.deleteById(requestInventoryById);
+        requestRespondInventory.setStatusCode(200);
+        requestRespondInventory.setMessage("Inventory successfully deleted");
+
         return requestRespondInventory;
     }
 
@@ -109,8 +94,7 @@ public class InventoryService {
         return requestRespondInventory;
     }
 
-    private Inventory getInventory(Inventory requestUpdateInventory, Optional<Inventory> optionalInventory) {
-        Inventory inventory = optionalInventory.get();
+    private Inventory getInventoryFields(Inventory requestUpdateInventory, Inventory inventory) {
         if(Objects.nonNull(requestUpdateInventory.getCategory()) && !requestUpdateInventory.getCategory().isEmpty()) {
             inventory.setCategory(requestUpdateInventory.getCategory());
         }
