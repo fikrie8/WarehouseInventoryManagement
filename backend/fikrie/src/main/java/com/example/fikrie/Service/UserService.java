@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,7 +25,7 @@ public class UserService {
     private final UserRepo userRepo;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    private BCryptPasswordEncoder encoder =new BCryptPasswordEncoder(12);
+    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     public RequestRespondUser register(RequestRespondUser userRegistrationRequest) {
         RequestRespondUser requestRespondUser = new RequestRespondUser();
@@ -50,34 +50,25 @@ public class UserService {
 
     public RequestRespondUser login(RequestRespondUser userLoginRequest) {
         RequestRespondUser requestRespondUser = new RequestRespondUser();
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(userLoginRequest.getUsername(), userLoginRequest.getPassword()));
-            if(authentication.isAuthenticated()) {
-                Optional<Users> optionalUsers = userRepo.findByUsername(userLoginRequest.getUsername());
-                if(optionalUsers.isPresent()) {
-                    var user = optionalUsers.get();
-                    UserPrinciple userPrinciple = new UserPrinciple(user);
-                    var jwtToken = jwtService.generateToken(user.getUsername());
-                    var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), userPrinciple);
-                    requestRespondUser.setStatusCode(200);
-                    requestRespondUser.setToken(jwtToken);
-                    requestRespondUser.setUsername(user.getUsername());
-                    requestRespondUser.setRole(user.getRole());
-                    requestRespondUser.setEmail(user.getEmail());
-                    requestRespondUser.setRefreshToken(refreshToken);
-                    requestRespondUser.setUser(user);
-                    requestRespondUser.setExpirationTime("24Hrs");
-                    requestRespondUser.setMessage("Successfully Logged In");
-                } else {
-                    requestRespondUser.setStatusCode(404);
-                    requestRespondUser.setMessage("User not found");
-                }
-            }
-        } catch (Exception e) {
-            requestRespondUser.setStatusCode(500);
-            requestRespondUser.setMessage(e.getMessage());
-        }
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(userLoginRequest.getUsername(), userLoginRequest.getPassword()));
+        Users user = userRepo.findByUsername(userLoginRequest.getUsername())
+                                .orElseThrow(() -> new UsernameNotFoundException("User record not found in system : " + userLoginRequest.getUsername()));
+
+        UserPrinciple userPrinciple = new UserPrinciple(user);
+        var jwtToken = jwtService.generateToken(user.getUsername());
+        var refreshToken = jwtService.generateRefreshToken(new HashMap<>(), userPrinciple);
+
+        requestRespondUser.setStatusCode(200);
+        requestRespondUser.setToken(jwtToken);
+        requestRespondUser.setUsername(user.getUsername());
+        requestRespondUser.setRole(user.getRole());
+        requestRespondUser.setEmail(user.getEmail());
+        requestRespondUser.setRefreshToken(refreshToken);
+        requestRespondUser.setUser(user);
+        requestRespondUser.setExpirationTime("24Hrs");
+        requestRespondUser.setMessage("Successfully Logged In");
+
         return requestRespondUser;
     }
 
