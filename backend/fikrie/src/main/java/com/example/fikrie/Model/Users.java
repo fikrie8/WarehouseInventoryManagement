@@ -19,6 +19,9 @@ public class Users {
     @Column(unique = true)
     private String username;
     private String password;
+    private String firstName;
+    private String lastName;
+    private String department;
     private String role;
     private String email;
 }

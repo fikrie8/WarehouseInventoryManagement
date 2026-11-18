@@ -1,20 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { data } from 'react-router-dom';
 
 const UserManagement = ({ user, setUser }) => {
     const [allUsers, setAllUsers] = useState([]);
     const [showUpdateModal, setShowUpdateModal] = useState(false);
+
     const [editData, setEditData] = useState({ 
-        username: user?.username || '', 
-        email: user?.email || '' 
+        firstName: user?.firstName || '',
+        lastName: user?.lastName || '',
+        department: user?.department || 'USER',
+        email: user?.email || ''
     });
-    
 
     useEffect(() => {
         if (user.role === 'ADMIN' || user.role === 'MANAGER') {
             fetchAllUsers();
         }
-    }, [user.role]);
+    }, [user?.role]);
+
+    useEffect(() => {
+        if (user && showUpdateModal) {
+            setEditData({
+                firstName: user.firstName || '',
+                lastName: user.lastName || '',
+                department: user.department || 'USER',
+                email: user.email || ''
+            });
+        }
+    }, [showUpdateModal])
+    const handleChange = (e) => {
+        setEditData({ ...editData, [e.target.name]: e.target.value });
+    };
 
     const fetchAllUsers = async () => {
         try {
@@ -27,12 +44,14 @@ const UserManagement = ({ user, setUser }) => {
             };
             let url = "";
             if (user.role === 'ADMIN') {
-                url = `http://localhost:8080/admin/get-user-info/all`;
+                url = `/api/admin/get-user-info/all`;
             } else if (user.role === 'MANAGER') {
-                url = `http://localhost:8080/manager/get-user-info/all`;
+                url = `/api/manager/get-user-info/all`;
             }
             const response = await axios.get(url, config);
-            setAllUsers(response.data.listOfUsers || []);
+            if(response.data.statusCode === 200) {
+                setAllUsers(response.data.listOfUsers || []);
+            }
         } catch (err) { console.error("Fetch users failed", err); }
     };
 
@@ -45,7 +64,7 @@ const UserManagement = ({ user, setUser }) => {
                          Authorization: `Bearer ${token}` 
                         } 
                 };
-                await axios.delete(`http://localhost:8080/admin/delete-user/${targetId}`, config);
+                await axios.delete(`/api/admin/delete-user/${targetId}`, config);
                 alert("User deleted successfully.");
                 fetchAllUsers();
             } catch (err) {
@@ -57,6 +76,8 @@ const UserManagement = ({ user, setUser }) => {
     const handleUpdateInfo = async (e) => {
         e.preventDefault();
         try {
+            //let url = "";
+            let url = "/api/user/update-user";
             const token = JSON.parse(localStorage.getItem("refreshToken"));
             const config = { 
                 headers: { 
@@ -64,19 +85,32 @@ const UserManagement = ({ user, setUser }) => {
                 } 
             };
             if (user.role === 'ADMIN') {
-                url = `http://localhost:8080/admin/update-user`;
+                url = `/api/admin/update-user`;
             } else if (user.role === 'MANAGER') {
-                url = `http://localhost:8080/manager/update-user`;
-            } else {
-                url = `http://localhost:8080/user/update-user`;
-            }            
-            /*Still trying to figure out why this axios.put keep getting 401 Error while POSTMAN is working just fine*/
-            const response = await axios.put(url, editData, config);
-            setUser(response.data.user);
-            localStorage.setItem("user", JSON.stringify(response.data));
+                url = `/api/manager/update-user`;
+            }
+
+            const payload = {
+                username: user?.username,
+                user: {
+                    firstName: editData.firstName,
+                    lastName: editData.lastName,
+                    department: editData.department,
+                    email: editData.email
+                }
+            };
+            
+            const response = await axios.put(url, payload, config);
+            const updateUser = response.data.user?response.data.user:response.data;
+            setUser(updateUser);
+            localStorage.setItem("user", JSON.stringify(updateUser));
             setShowUpdateModal(false);
             alert("Information updated!");
-        } catch (err) { alert("Update failed."); }
+            window.location.reload();
+        } catch (err) { 
+            console.error("Update failed: ", err);
+            alert("Update failed." + (err.response?.data?.message || "Unauthorized")); 
+        }
     };
 
     return (
@@ -151,12 +185,48 @@ const UserManagement = ({ user, setUser }) => {
                         <h5 className="mb-3 fw-bold">Update My Information</h5>
                         <form onSubmit={handleUpdateInfo}>
                             <div className="mb-3">
-                                <label className="form-label small fw-bold">Username</label>
-                                <input type="text" className="form-control" value={editData.username} onChange={(e) => setEditData({...editData, username: e.target.value})} required />
+                                <label className="form-label small fw-bold">First Name</label>
+                                <input  type="text"
+                                        name="firstName"
+                                        className="form-control" 
+                                        value={editData.firstName} 
+                                        onChange={handleChange}
+                                        required/>
                             </div>
+                            <div className="mb-3">
+                                <label className="form-label small fw-bold">Last Name</label>
+                                <input  type="text"
+                                        name="lastName"
+                                        className="form-control"
+                                        value={editData.lastName}
+                                        onChange={handleChange}
+                                        required/>
+                            </div>
+                            {user.role === 'MANAGER' && (
+                            <div className="mb-3">
+                                <label className="form-label">Department</label>
+                                <select 
+                                    name="department" 
+                                    className="form-select" 
+                                    value={editData.department} 
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="ADMIN">Human Resource</option>
+                                    <option value="MANAGEMENT">Management</option>
+                                    <option value="LOGISTIC">Logistic</option>
+                                    <option value="USER">User</option>
+                                </select>
+                            </div>
+                            )}
                             <div className="mb-4">
                                 <label className="form-label small fw-bold">Email Address</label>
-                                <input type="email" className="form-control" value={editData.email} onChange={(e) => setEditData({...editData, email: e.target.value})} required />
+                                <input  type="email"
+                                        name="email"
+                                        className="form-control"
+                                        value={editData.email}
+                                        onChange={handleChange}
+                                        required />
                             </div>
                             <div className="d-flex justify-content-end gap-2">
                                 <button type="button" className="btn btn-light" onClick={() => setShowUpdateModal(false)}>Cancel</button>

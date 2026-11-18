@@ -15,8 +15,11 @@ const LoginOrRegister = () => {
     const [formData, setFormData] = useState({
         username: '',
         password: '',
+        firstName: '',
+        lastName: '',
+        department: 'USER',
         email: '',
-        role: 'USER'
+        role: ''
     });
     
     const [message, setMessage] = useState('');
@@ -30,18 +33,30 @@ const LoginOrRegister = () => {
         setMessage("");
         const endpoint = activeTab === 'login' ? 'login' : 'register';
         try {
-            const response = await axios.post(`http://localhost:8080/${endpoint}`, formData); 
+            let payload = { ...formData };
+            if (activeTab === 'register') {
+                const roleMapping = {
+                    'ADMIN': 'ADMIN',
+                    'MANAGEMENT': 'MANAGER',
+                    'LOGISTIC': 'LOGISTIC',
+                    'USER': 'USER'
+                };
+                payload.role = roleMapping[formData.department] || 'USER';
+            } else {
+                payload = { 
+                    username: formData.username, 
+                    password: formData.password 
+                };
+            }
+            
+            const response = await axios.post(`/api/${endpoint}`, payload); 
             if (activeTab === 'login') {
                 if(response.data.statusCode === 200) {
-                    console.log(response.status);
-                    console.log(response.data.statusCode);
-                    console.log(response.data.message);
                     setMessage("Welcome back, " + response.data.username);
-                    console.log("response.data : " + JSON.stringify(response.data));
-                    console.log("response.data.users : " + JSON.stringify(response.data.user));
-                    localStorage.setItem("user", JSON.stringify(response.data.user));
+
+                    const userData = response.data.user? response.data.user:response.data;
+                    localStorage.setItem("user", JSON.stringify(userData));
                     localStorage.setItem("refreshToken", JSON.stringify(response.data.refreshToken));
-                    console.log("refreshToken : " + JSON.parse(localStorage.getItem("refreshToken")));
                     navigate('/home');
                 } else {
                     setMessage("Login failed : " + response.data.message);
@@ -49,7 +64,10 @@ const LoginOrRegister = () => {
             } else {
                 if(response.data.statusCode === 200) {
                     setMessage("Registration Successful! Switching to Login tab.");
-                    setFormData({ ...formData, password: '' });
+                    setFormData({
+                        username: '', password: '', firstName: '', 
+                        lastName: '', department: '', email: '', role: 'USER'
+                    });
                     setTimeout(() => {
                         setActiveTab('login');
                         setMessage("");
@@ -58,21 +76,37 @@ const LoginOrRegister = () => {
                     setMessage("Registration failed : " + response.data.message);
                 }
             }
-        } catch (error) {
-            setMessage("Error: " + (error.response?.data?.message || "Check your Connection/API"));
+        } catch (err) {
+            if(err.response) {
+                alert(`Failed to ${endpoint}, Server/API error : ` + err.response.data);
+                console.error(`Failed to ${endpoint}, Server/API error : ` + err.response.data);
+            } else {
+                console.error(`Failed to ${endpoint}, Client error : ` + err.message);
+            }
         }
     };
 
     const handleResetRequest = async () => {
     try {
-        const response = await axios.put('http://localhost:8080/reset-password', {
+        const response = await axios.put('/api/reset-password', {
             username: resetUsername,
             password: resetPassword
         });
-        alert(response.data.message || "Password has been reset!");
-        setShowReset(false);
-    } catch (error) {
-        alert("Error: " + (error.response?.data?.message || "Username not found"));
+        if(response.data.statusCode === 200) {
+            alert(response.data.message || "Password has been reset!");
+            setShowReset(false);
+            setResetUsername('');
+            setResetPassword('');
+        }
+    } catch (err) {
+        if(err.response) {
+            alert("Failed to reset password, Server/API error : " + err.response.data);
+            console.error("Failed to reset password, Server/API error : " + err.response.data);
+        } else {
+            console.error("Failed to reset password, Client error : " + err.message);
+        }
+        setResetUsername('');
+        setResetPassword('');
     }
 };
 
@@ -106,31 +140,56 @@ const LoginOrRegister = () => {
 
                         {activeTab === 'register' && (
                             <div className="mb-3">
-                                <label className="form-label">Role</label>
+                                <label className="form-label">Department</label>
                                 <select 
-                                    name="role" 
+                                    name="department" 
                                     className="form-select" 
-                                    value={formData.role} 
+                                    value={formData.department} 
                                     onChange={handleChange}
                                     required
                                 >
+                                    <option value="ADMIN">Human Resource</option>
+                                    <option value="MANAGEMENT">Management</option>
+                                    <option value="LOGISTIC">Logistic</option>
                                     <option value="USER">User</option>
-                                    <option value="MANAGER">Manager</option>
-                                    <option value="ADMIN">Admin</option>
                                 </select>
                             </div>   
                         )
                         }
                         {activeTab === 'register' && 
-                        (
-                            <div className="mb-3">
-                            <label className="form-label">Email</label>
-                            <input 
-                                type="text" name="email" className="form-control" 
-                                value={formData.email} onChange={handleChange}
-                            />
-                        </div>
-                        )}
+                            (
+                                <div className="mb-3">
+                                    <label className="form-label">Email</label>
+                                    <input 
+                                        type="text" name="email" className="form-control" 
+                                        value={formData.email} onChange={handleChange}
+                                    />
+                                </div>
+                                
+                            )
+                        }
+                        {activeTab === 'register' && 
+                            (
+                                <div className="mb-3">
+                                    <label className="form-label">First Name</label>
+                                    <input 
+                                        type="text" name="firstName" className="form-control" 
+                                        value={formData.firstName} onChange={handleChange}
+                                    />
+                                </div>
+                            )
+                        }
+                        {activeTab === 'register' && 
+                            (
+                                <div className="mb-3">
+                                    <label className="form-label">Last Name</label>
+                                    <input 
+                                        type="text" name="lastName" className="form-control" 
+                                        value={formData.lastName} onChange={handleChange}
+                                    />
+                                </div>                            
+                            )
+                        }                        
                         <div className="mb-3">
                             <label className="form-label">Password</label>
                             <input 
@@ -138,7 +197,6 @@ const LoginOrRegister = () => {
                                 value={formData.password} onChange={handleChange} required 
                             />
                         </div>
-
                         {activeTab === 'login' && (
                             <div className="text-end mb-3">
                                 <small className="text-primary cursor-pointer" onClick={() => setShowReset(true)} style={{cursor: 'pointer'}}>
@@ -146,7 +204,6 @@ const LoginOrRegister = () => {
                                 </small>
                             </div>
                         )}
-
                         <button type="submit" className="btn btn-primary w-100 mt-2 py-2">
                             {activeTab === 'login' ? 'SIGN IN' : 'CREATE ACCOUNT'}
                         </button>
@@ -165,7 +222,7 @@ const LoginOrRegister = () => {
                         <h5 className="mb-3">Reset Password</h5>
                         <p className="text-muted small">Enter your username and new password.</p>
                         <input 
-                            type="username" 
+                            type="text" 
                             className="form-control mb-3" 
                             value={resetUsername}
                             onChange={(e) => setResetUsername(e.target.value)}/>
@@ -175,8 +232,8 @@ const LoginOrRegister = () => {
                             value={resetPassword}
                             onChange={(e) => setResetPassword(e.target.value)}/>
                         <div className="d-flex justify-content-end gap-2">
-                            <button className="btn btn-secondary btn-sm" onClick={() => setShowReset(false)}>Cancel</button>
-                            <button className="btn btn-primary btn-sm" onClick={handleResetRequest}>Reset</button>
+                            <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowReset(false)}>Cancel</button>
+                            <button type="button" className="btn btn-primary btn-sm" onClick={handleResetRequest}>Reset</button>
                         </div>
                     </div>
                 </div>
