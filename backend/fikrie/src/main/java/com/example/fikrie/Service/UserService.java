@@ -134,25 +134,21 @@ public class UserService {
         return requestRespondUser;
     }
 
-    public RequestRespondUser updateUser(String oldUsername, Users requestUpdateUser) {
+    public RequestRespondUser updateUserById(Integer requestUserId, Users requestUpdateUser) {
         RequestRespondUser requestRespondUser = new RequestRespondUser();
-        try {
-            Optional<Users> optionalUser = userRepo.findByUsername(oldUsername);
-            if(optionalUser.isPresent()) {
-                Users user = getUser(requestUpdateUser, optionalUser);
-                Users savedUser = userRepo.save(user);
-                requestRespondUser.setUsername(savedUser.getUsername());
-                requestRespondUser.setUser(savedUser);
-                requestRespondUser.setStatusCode(200);
-                requestRespondUser.setMessage("User updated successfully");
-            } else {
-                requestRespondUser.setStatusCode(404);
-                requestRespondUser.setMessage("User not found for update");
-            }
-        } catch (Exception e) {
-            requestRespondUser.setStatusCode(500);
-            requestRespondUser.setMessage("Error occurred when updating user :" + e.getMessage());
-        }
+        Users oldUser = userRepo.findById(requestUserId)
+                .orElseThrow(()-> new UsernameNotFoundException("User not found for update : " + requestUserId));
+
+        Users newUpdatedUser = checkUserNewInformation(requestUpdateUser, oldUser);
+        Users savedUser = userRepo.save(newUpdatedUser);
+        requestRespondUser.setUsername(savedUser.getUsername());
+        requestRespondUser.setFirstName(savedUser.getFirstName());
+        requestRespondUser.setLastName(savedUser.getLastName());
+        requestRespondUser.setEmail(savedUser.getEmail());
+        requestRespondUser.setUser(savedUser);
+        requestRespondUser.setStatusCode(200);
+        requestRespondUser.setMessage("User updated successfully");
+
         return requestRespondUser;
     }
 
