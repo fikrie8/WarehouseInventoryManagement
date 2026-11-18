@@ -16,17 +16,14 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    private String secretKey = "";
+    // Added a volatile cached storage key so the random key stays identical
+    // for as long as the application is running, preventing internal reload crashes.
+    @Value("${jwt.secret-key}")
+    private String secretKey;
+    private volatile SecretKey runtimeCachedKey = null;
     private static final long EXPIRATION_TIME = 86400000;
 
     public JwtService() {
-        try {
-            KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
-            SecretKey generatedKey = keyGenerator.generateKey();
-            secretKey = Base64.getEncoder().encodeToString(generatedKey.getEncoded());
-        }  catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public String generateToken(String username) {
