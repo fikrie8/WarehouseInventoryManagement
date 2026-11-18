@@ -20,7 +20,7 @@ id_ed25519
 >>>>>>> master
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
