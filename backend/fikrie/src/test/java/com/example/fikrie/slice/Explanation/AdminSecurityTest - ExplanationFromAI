@@ -1,0 +1,169 @@
+
+The Hidden Problem: Why it was returning 200 OK before
+
+Before adding the setup block, your test had this line:
+/*--------------------------------
+    @MockitoBean
+    private JwtFilter jwtFilter;
+---------------------------------*/
+
+When you create a mock using Mockito, it creates a completely empty shell of an object. By default, every method inside a mock object does absolutely nothing (it returns null or is a void operation).
+Because JwtFilter extends Spring’s OncePerRequestFilter, its main execution method is doFilter(request, response, chain).
+1. The incoming test request hit your mock JwtFilter.
+2. Because it was an unconfigured mock, its doFilter method executed as an empty void method. It did absolutely nothing.
+3. Crucially: It did not call chain.doFilter(request, response). It broke the chain completely.
+When a filter breaks the chain and does not forward the request down the line, Spring Security assumes the request processing was completely handled by that filter. The request never reached your security authorization rules (.requestMatchers("/admin/**").hasAuthority("ADMIN")), and it never reached your controller. Spring simply returned a default empty fallback HTTP response wrapper, which defaults to 200 OK.
+
+
+Line-by-Line Breakdown of the Solution
+
+Here is the exact code block you added:
+
+/*--------------------------------
+    @BeforeEach
+    void setUp() throws Exception {
+        doAnswer(invocation -> {
+            HttpServletRequest request = invocation.getArgument(0);
+            HttpServletResponse response = invocation.getArgument(1);
+            FilterChain chain = invocation.getArgument(2);
+            chain.doFilter(request, response);
+            return null;
+        }).when(jwtFilter).doFilter(any(), any(), any());
+    }
+---------------------------------*/
+
+Let's dissect it piece by piece:
+
+1. @BeforeEach
+
+    • What it means: Tells JUnit 5 to execute this entire method before every single individual test runs.
+    • This ensures each test starts with a clean, perfectly configured mock filter.
+
+2. doAnswer(invocation -> { ... }).when(jwtFilter).doFilter(any(), any(), any());
+
+    • What it means: By default, Mockito mocks do nothing for void methods. doAnswer tells Mockito: "Hey, instead of doing nothing when someone calls jwtFilter.doFilter(), I want you to execute this custom block of Java code instead."
+    • The any(), any(), any() means: "Trigger this custom code regardless of what specific request, response, or chain objects are passed into the filter."
+
+3. HttpServletRequest request = invocation.getArgument(0);
+
+    • What it means: Inside the filter, the first parameter (index 0) is the incoming HTTP request.
+    • We grab it out of the running test execution context.
+
+4. HttpServletResponse response = invocation.getArgument(1);
+
+    • What it means: The second parameter (index 1) is the outgoing HTTP response.
+    • We grab it so it can be passed forward.
+
+5. FilterChain chain = invocation.getArgument(2);
+
+    • What it means: The third parameter (index 2) is the FilterChain itself.
+    • This object represents the conveyor belt of all security filters configured in your SecurityFilterChain bean.
+
+6. chain.doFilter(request, response);
+
+    • The Magic Line: This is the line that fixed your entire test suite.
+    • Instead of letting the mock freeze the request, this tells Spring: "Pass this request along to the next filter on the conveyor belt."
+
+7. return null;
+
+    • What it means: Because doFilter is a void method under the hood, a Mockito doAnswer block requires a null return statement at the very end to satisfy the Java compiler.
+
+The Final Result Flow (Why it works now)
+
+Now, when your test runs with a MANAGER authority:
+
+    1. MockMvc sends a request to /admin/get-user-info/all.
+    2. The request hits your custom jwtFilter position.
+    3. Your new setUp() code triggers, stepping out of the way and executing chain.doFilter(), pushing the request forward.
+    4. The request safely reaches the core Spring Security filter engine.
+    5. Spring Security looks at your SecurityFilterChain rules: "/admin/* needs ADMIN"*.
+    6. It checks the test user context: This user only has MANAGER.
+    7. BAM! Access Denied! Spring Security stops the request and throws a strict authorization exception, returning the beautiful 403 Forbidden your test was waiting for.
+
+Followup question and answer.
+
+1. Is doFilter() a method from Spring Boot?
+
+    No. doFilter() actually comes from the Java Servlet API (jakarta.servlet.Filter), which is a foundational web standard that existed long before Spring Boot was even created.
+    Think of Java Servlets like the raw concrete foundation of a house, and Spring Boot like the beautifully furnished apartment built on top of it.
+    Spring Boot adopts this standard, which is why your JwtFilter implements or extends it.
+
+2. Why does one take 2 parameters and the other takes 3?
+
+    They look different because they are playing two completely different roles:
+    • chain.doFilter(request, response) (2 Parameters): This is the action command. You are telling the conveyor belt (the chain) to move forward and carry the request and response to the next station.
+    • jwtFilter.doFilter(request, response, chain) (3 Parameters): This is the method signature of your actual filter. It takes 3 arguments because it needs the request and response to read your JWT token, and it also needs a reference to the chain itself so it knows where to send the request when it is done.
+
+3. What does invocation actually do? (The Proxy Concept)
+
+    In programming, invocation represents a captured moment in time.
+    Imagine you are a Hollywood stunt double. The main actor (jwtFilter) was supposed to do a stunt (doFilter), but the director (Mockito) paused the movie right before the stunt happened.
+    The director hands you a clipboard called invocation. This clipboard contains everything that was happening at that exact moment:
+        1. Who was called (The jwtFilter).
+        2. What method was called (doFilter).
+        3. What items were handed to that method (The request, the response, and the chain).
+    By writing invocation.getArgument(2), you are looking at the clipboard and grabbing the 3rd item (the FilterChain) so you can manually tell it to keep running.
+
+4. Reusable Cheat Sheets for Your Notes
+
+Here are two clean, generic code structures you can copy-paste into your personal engineering notes for the future.
+
+Cheat Sheet A: The Standard Filter Structure (Production Code)
+
+Use this template whenever you are writing a custom security filter in any Java web application.
+
+/* -----------------------------------------------------------
+
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+public class GenericCustomFilter implements Filter {
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+
+        // 1. Cast the generic requests to HTTP-specific requests
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+        // 2. [BUSINESS LOGIC GOES HERE]
+        // Example: Check headers, validate tokens, log API metrics
+        System.out.println("Intercepted request path: " + httpRequest.getRequestURI());
+
+        // 3. CRUCIAL STEP: Pass the items down the conveyor belt to the next filter
+        chain.doFilter(httpRequest, httpResponse);
+    }
+}
+----------------------------------------------------------- */
+
+Cheat Sheet B: The Mockito Pass-Through Stub (Test Code)
+
+Use this layout inside your @BeforeEach setup block whenever you need to mock a filter but don't want it to stall or freeze your endpoint tests.
+
+/* -----------------------------------------------------------
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+// Inside your JUnit Test Class:
+@BeforeEach
+void configureFilterPassThrough() throws Exception {
+    doAnswer(invocation -> {
+        // Grab the items off Mockito's 'clipboard' based on their order in the method parameters
+        HttpServletRequest request = invocation.getArgument(0);  // 1st param
+        HttpServletResponse response = invocation.getArgument(1); // 2nd param
+        FilterChain chain = invocation.getArgument(2);            // 3rd param
+
+        // Command the chain to continue running normally
+        chain.doFilter(request, response);
+        return null;
+    }).when(mockFilterInstance).doFilter(any(), any(), any());
+}
+
+----------------------------------------------------------- */
