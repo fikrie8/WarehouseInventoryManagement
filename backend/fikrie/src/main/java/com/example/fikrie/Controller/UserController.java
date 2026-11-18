@@ -5,6 +5,7 @@ import com.example.fikrie.Service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,6 +17,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/get-user-info/{requestUsername}")
+    @PreAuthorize("#requestUsername == authentication.principal.username or hasAnyAuthority('MANAGER', 'ADMIN')")
     public ResponseEntity<RequestRespondUser> getUserInfo(@PathVariable(required = true) String requestUsername) {
         return ResponseEntity.ok(userService.getUserProfile(requestUsername));
     }
