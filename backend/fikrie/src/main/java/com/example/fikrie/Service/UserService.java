@@ -194,13 +194,15 @@ public class UserService {
         return requestRespondUser;
     }
 
-    private Users getUser(Users requestUpdateUser, Optional<Users> optionalUsers) {
-        Users user = optionalUsers.get();
-        if(Objects.nonNull(requestUpdateUser.getUsername()) && !requestUpdateUser.getUsername().isEmpty()) {
-            user.setUsername(requestUpdateUser.getUsername());
+    private Users checkUserNewInformation(Users requestUpdateUser, Users user) {
+        if(Objects.nonNull(requestUpdateUser.getFirstName()) && !requestUpdateUser.getFirstName().isEmpty()) {
+            user.setFirstName(requestUpdateUser.getFirstName());
         }
-        if(Objects.nonNull(requestUpdateUser.getPassword()) && !requestUpdateUser.getPassword().isEmpty()) {
-            user.setPassword(encoder.encode(requestUpdateUser.getPassword()));
+        if(Objects.nonNull(requestUpdateUser.getLastName()) && !requestUpdateUser.getLastName().isEmpty()) {
+            user.setLastName(requestUpdateUser.getLastName());
+        }
+        if(Objects.nonNull(requestUpdateUser.getDepartment()) && !requestUpdateUser.getDepartment().isEmpty()) {
+            user.setDepartment(requestUpdateUser.getDepartment());
         }
         if(Objects.nonNull(requestUpdateUser.getEmail()) && !requestUpdateUser.getEmail().isEmpty()) {
             user.setEmail(requestUpdateUser.getEmail());
