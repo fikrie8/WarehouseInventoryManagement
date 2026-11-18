@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5173")
 @Slf4j
 @RequestMapping("/admin")
 @RequiredArgsConstructor
@@ -35,5 +34,4 @@ public class AdminController {
     public ResponseEntity<RequestRespondUser> deleteUser(@PathVariable(required = true) Integer requestDeleteId) {
         return ResponseEntity.ok(userService.deleteUser(requestDeleteId));
     }
-
 }

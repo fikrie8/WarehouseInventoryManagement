@@ -7,29 +7,34 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Value;
 
-import java.util.Objects;
 import java.util.Optional;
 
 @Configuration
 @Slf4j
 public class AdminSeeder {
 
+    @Value("${ADMIN_EMAIL}")
+    private String adminEmail;
+
+    @Value("${ADMIN_PASSWORD}")
+    private String adminPassword;
+
     @Bean
     CommandLineRunner createAdmin(UserRepo userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
             String username = "admin";
-            String adminEmail = System.getenv("ADMIN_EMAIL");
-            String password = System.getenv("ADMIN_PASSWORD");
-            if(password.isEmpty()) {
-                throw new RuntimeException("ADMIN_PASSWORD environment variable not set");
+
+            if(adminPassword == null || adminPassword.isEmpty()) {
+                throw new RuntimeException("ADMIN_PASSWORD environment variable is not set");
             }
             Optional<Users> adminOptional = userRepository.findByUsername(username);
             if (adminOptional.isEmpty()) {
-                log.debug("Creating ADMIN user");
+                log.info("Creating ADMIN user with email: " + adminEmail);
                 Users admin = new Users();
                 admin.setUsername(username);
-                admin.setPassword(passwordEncoder.encode(password));
+                admin.setPassword(passwordEncoder.encode(adminPassword));
                 admin.setRole("ADMIN");
                 admin.setEmail(adminEmail);
                 userRepository.save(admin);
