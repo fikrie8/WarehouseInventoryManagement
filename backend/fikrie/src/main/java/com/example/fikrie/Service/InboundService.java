@@ -105,6 +105,7 @@ public class InboundService {
         return requestRespondInbound;
     }
 
+    @Transactional
     public RequestRespondInbound updateInbound(Long inboundId, RequestRespondInbound requestUpdateInbound) {
         RequestRespondInbound requestRespondInbound = new RequestRespondInbound();
         if(requestUpdateInbound.getQuantity() < 0){
@@ -124,6 +125,7 @@ public class InboundService {
         return requestRespondInbound;
     }
 
+    @Transactional
     public RequestRespondInbound deleteInbound(Long requestInboundById) {
         RequestRespondInbound requestRespondInbound = new RequestRespondInbound();
         Inbound inbound = inboundRepo.findById(requestInboundById)

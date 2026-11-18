@@ -69,6 +69,7 @@ public class InventoryService {
         return requestRespondInventory;
     }
 
+    @Transactional
     public RequestRespondInventory deleteInventory(Integer requestInventoryById) {
         RequestRespondInventory requestRespondInventory = new RequestRespondInventory();
         Inventory inventory = inventoryRepo.findById(requestInventoryById)

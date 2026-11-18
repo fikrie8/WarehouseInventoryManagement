@@ -102,6 +102,7 @@ public class OutboundService {
         return requestRespondOutbound;
     }
 
+    @Transactional
     public RequestRespondOutbound updateOutbound(Long outboundId, RequestRespondOutbound requestUpdateOutbound) {
         RequestRespondOutbound requestRespondOutbound = new RequestRespondOutbound();
         if(requestUpdateOutbound.getQuantity() <= 0) {
@@ -121,6 +122,7 @@ public class OutboundService {
         return requestRespondOutbound;
     }
 
+    @Transactional
     public RequestRespondOutbound deleteOutbound(Long requestOutboundById) {
         RequestRespondOutbound requestRespondOutbound = new RequestRespondOutbound();
         Outbound outbound = outboundRepo.findById(requestOutboundById)
