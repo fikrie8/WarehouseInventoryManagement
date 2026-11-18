@@ -1,0 +1,144 @@
+
+Part 1: Line-by-Line Code Breakdown
+
+    /* =========================================================================================
+
+        public class JwtFilterTest {
+
+    ========================================================================================= */
+
+    • The Logic: This is a pure Unit Test. Notice there is no @SpringBootTest or @WebMvcTest annotation at the class level. We are executing this file without booting up any part of the heavy Spring framework, keeping its run time to mere milliseconds.
+
+    /* =========================================================================================
+
+        @Mock
+        private JwtService jwtService;
+
+        @Mock
+        private MyUserDetailService myUserDetailsService;
+
+    ========================================================================================= */
+
+    • The Logic: We use Mockito’s @Mock to build fake, completely empty structural shells of your services. Because no Spring engine is running, we cannot @Autowired real beans. Mockito crafts these out of thin air.
+
+    /* =========================================================================================
+
+        @BeforeEach
+        void setUp() {
+            MockitoAnnotations.openMocks(this);
+            SecurityContextHolder.clearContext();
+            jwtFilter = new JwtFilter(jwtService, myUserDetailsService);
+        }
+
+    ========================================================================================= */
+
+    • The Logic: Before every single test method runs, we initialize Mockito and manually instantiate your filter using its constructor. Passing our mocks directly into new JwtFilter(...) is a bulletproof way to guarantee that your internal variables can never be null. We also clear Spring's security vault (SecurityContextHolder) so old test logs don't bleed into new tests.
+
+Part 2: The Core Test Execution Deep-Dive
+
+Let's look at the operational method where all the heavy lifting happens:
+
+    /* =========================================================================================
+
+        @Test
+        void filter_ValidToken_ShouldAuthenticate() throws Exception {
+            String mockToken = "eyJhbGciOiJIUzI1NiJ9.mockTokenString";
+
+    ========================================================================================= */
+
+    • The Logic: We define a raw string that mimics what a valid, encrypted cryptographic token looks like.
+
+    /* =========================================================================================
+
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader("Authorization", "Bearer " + mockToken);
+
+    ========================================================================================= */
+
+    • The Logic: This is crucial. We do not mock the HTTP request using Mockito. Instead, we use Spring Test's built-in MockHttpServletRequest utility. This object contains all the genuine, underlying infrastructure properties that a real servlet engine requires to pass a request downstream without crashing.
+
+    /* =========================================================================================
+
+        when(jwtService.extractUsername(anyString())).thenReturn("John");
+
+    ========================================================================================= */
+
+    • The Logic: We program our fake jwtService. We tell it: "No matter what string token is handed to you, immediately return the username "John"."
+
+    /* =========================================================================================
+
+        when(myUserDetailsService.loadUserByUsername(anyString())).thenReturn(realUserDetails);
+
+    ========================================================================================= */
+
+    • The Logic: We program our fake user directory. We tell it: "When someone asks you to look up a username string, hand them back our fully operational, pre-constructed realUserDetails object."
+
+    /* =========================================================================================
+
+        when(jwtService.validateToken(anyString(), any(UserDetails.class))).thenReturn(true);
+
+    ========================================================================================= */
+
+    • The Logic: We open the main conditional security gate. We instruct the mock service: "When the filter asks you to validate a token string against a user profile class, instantly say true (the token is valid)."
+
+    /* =========================================================================================
+
+        jwtFilter.doFilter(request, response, filterChain);
+
+    ========================================================================================= */
+
+    • The Logic: The Action. We manually invoke the filter's execution loop. The request flows through your code, reads the mock headers, validates using our programmed answers, and attempts to authenticate the user.
+
+    /* =========================================================================================
+
+        verify(filterChain, times(1)).doFilter(request, response);
+        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNotNull();
+        assertThat(SecurityContextHolder.getContext().getAuthentication().getName()).isEqualTo("John");
+        }
+
+    ========================================================================================= */
+
+    • The Logic: The Assertions. We verify three concrete behaviors:
+        1. The filter didn't freeze up and correctly pushed the request forward down the conveyor belt (filterChain).
+        2. Spring's internal security vault is no longer empty.
+        3. The person logged into the system is officially confirmed to be "John".
+
+Part 3: Why we must use anyString() instead of a Normal String
+
+    This is the most common point of confusion with Mockito. Why can't we just write when(jwtService.extractUsername(mockToken))?
+    It comes down to strict object identity vs loose matching data types.
+    Inside your real production JwtFilter code, you wrote this line:
+
+    /* =========================================================================================
+
+    token = authHeader.substring(7);
+
+    ========================================================================================= */
+
+    When Java executes .substring(7), it splits the header string. Behind the scenes, Java creates a brand new String object at a completely different memory address to hold that split value.
+    If you configure Mockito with an exact value like when(jwtService.extractUsername(mockToken)), Mockito acts like a strict security guard who was told: "Only accept a ticket with the exact memory identity tag of our original mockToken variable."
+    When your filter passes the new substring token, Mockito looks at it, realizes it's a completely different object instance in Java's memory, and says: "This doesn't match my configuration."
+    When a mock fails to match, it returns null, crashing your test.
+    By using anyString(), you change the rule from strict matching to type matching. You are telling Mockito: "I don't care about memory addresses, substring manipulations, or exact variable references.As long as the filter passes any valid text string, accept it and return 'John'."
+
+Part 4: The Kitchen Analogy 🍳
+
+    To make this completely intuitive for anyone else reading your codebase, imagine you are managing a high-end restaurant kitchen.
+    • The Customer's Order is the HTTP Request.
+    • The Head Chef is your JwtFilter.
+    • The Kitchen Manager is Mockito.
+
+    Scenario A: The Strict Value Blueprint (Why passing exact strings broke)
+
+    1. The Head Chef (JwtFilter) gets an order ticket wrapped in a protective silver foil bag (Bearer eyJhbGci...).
+    2. The Chef rips open the bag, takes out the clean paper ticket inside (.substring(7)), and hands it to the Kitchen Manager (Mockito) to confirm it's valid.
+    3. The Kitchen Manager looks at his notes. You had programmed him to expect a completely untouched, sealed envelope labeled mockToken.
+    4. Because the Chef crumpled and tore the paper open to read it, the Kitchen Manager panics and screams: "This paper looks different! It has a different shape and texture than the raw variable I was told to look for!"
+    5. The Manager throws the ticket in the trash (returns null), the kitchen halts, and the customer leaves hungry (NullPointerException / Auth was null).
+
+    Scenario B: The anyString() Blueprint (Why matchers fixed it)
+
+    1. You step in and fix the Kitchen Manager's (Mockito's) instructions using anyString() and any(UserDetails.class).
+    2. You tell the Manager: "Listen, stop looking at the microscopic folds, paper cuts, or memory footprints of the ticket. As long as the Chef hands you ANY piece of paper with handwriting on it (anyString()), and ANY valid culinary checklist profile (any(UserDetails.class)), you instantly tell him it's completely approved!"
+    3. Now, when the Chef rips open the foil bag, processes the text, and hands the slice of paper over, the Manager checks the rule: "Is it handwriting text? Yes! Is it a culinary checklist? Yes!"
+    4. The Manager smiles, yells "TRUE!", the Chef cooks the food flawlessly, and John successfully gets his meal (200 OK / Authenticated!).

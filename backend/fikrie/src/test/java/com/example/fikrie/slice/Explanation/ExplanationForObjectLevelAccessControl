@@ -1,0 +1,49 @@
+What is ObjectLevelAccessControl
+
+    This is a situation when a user with username John try to call /user/get-user-info on different username
+    Example : John will call /user/get-user-info/Jane
+    This should not be allowed.
+
+What Happens Under the Hood?
+
+    By default, when you use @WebMvcTest, Spring Boot only loads a tiny, minimal slice of your application (the controller classes and your global web configurations).
+    To keep your tests running fast, Spring Boot turns off its deep security inspection features by default.
+    Even though your controller has @PreAuthorize written on it, the test container treats it like a normal, plain text comment. It doesn't look at it or enforce it unless you explicitly force it to.
+
+The Two Special Additions Explained
+
+1. Why do we need @EnableMethodSecurity?
+
+    Think of this annotation as the Master Switch.
+    By default, Spring Security only looks at URLs (like /admin/** or /user/**).
+    It does not look inside your Java methods to inspect annotations like @PreAuthorize.
+    Adding @EnableMethodSecurity turns on a powerful engine called Spring AOP (Aspect-Oriented Programming).
+    This engine actively scans your methods right before they run to check if the caller meets the criteria.
+
+2. Why do we need @Import(AuthorizationTest.MethodSecurityConfig.class)?
+
+    If you put @EnableMethodSecurity directly inside your test class without wrapping it up in its own standalone nested class configuration block, Spring Boot gets confused and turns off its component scanner.
+    By making a dedicated container (public static class MethodSecurityConfig {}) and passing it into the class-level @Import, you are saying: "Spring, please keep loading all my controllers normally, but cleanly plug in this extra Method Security Master Switch on top of them."
+
+
+The Restaurant Analogy
+
+    Let us bring back our busy high-end restaurant to see exactly how this operates in a real-life environment.
+        • The SecurityFilterChain: The security guard standing at the front door checking IDs.
+        • The Controller Method: The Head Chef's private recipe locker inside the kitchen.
+        • @PreAuthorize: A strict biometric fingerprint scanner installed directly onto the handle of the recipe locker.
+
+        Scenario A: Before the Fix (Missing the Switch)
+
+        1. John walks into the restaurant. The front door guard (SecurityFilterChain) looks at his ID. John is a registered customer, so the guard lets him walk into the customer zone (/user/**).
+        2. John walks all the way into the kitchen, finds the private locker belonging to Jane (/user/get-user-info/Jane), and reaches for the handle.
+        3. Because the restaurant manager forgot to flip the master switch to power up the lock (missing @EnableMethodSecurity), the fingerprint scanner (@PreAuthorize) is turned off! The screen is pitch black.
+        4. John opens the locker with no resistance and reads Jane's private files. The restaurant incorrectly delivers a 200 OK response.
+
+        Scenario B: After the Fix (The Switch is Powered On)
+
+        1. You installed a dedicated backup battery line (@Import(MethodSecurityConfig.class)) and flipped the main power breaker switch (@EnableMethodSecurity).
+        2. John walks past the front door guard safely.
+        3. He sneaks up to Jane's private recipe locker and touches the handle.
+        4. BZZZ! The powered-on fingerprint scanner (@PreAuthorize) instantly turns on. It reads John's print, checks the system logs, and shouts: "Hey! You are John, but you are trying to open Jane's locker! And you don't have a Manager master key badge!"
+        5. The alarm sounds, the security system locks down, and John is thrown out of the kitchen with a strict 403 Forbidden!
