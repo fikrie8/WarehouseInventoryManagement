@@ -50,8 +50,29 @@ public class JwtService {
     }
 
     private SecretKey getKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
-        return Keys.hmacShaKeyFor(keyBytes);
+        if(secretKey != null && !secretKey.trim().equalsIgnoreCase("NONE")) {
+            try{
+                byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+                return Keys.hmacShaKeyFor(keyBytes);
+            } catch (IllegalArgumentException e) {
+                return Keys.hmacShaKeyFor(secretKey.getBytes());
+            }
+        }
+
+        // 2. Safe Fallback Mode: Generate a dynamic random key if no environment variable exists
+        if (runtimeCachedKey == null) {
+            synchronized (this) {
+                if (runtimeCachedKey == null) {
+                    try {
+                        KeyGenerator keyGenerator = KeyGenerator.getInstance("HmacSHA256");
+                        runtimeCachedKey = keyGenerator.generateKey();
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new RuntimeException("Failed to initialize backup security engine", e);
+                    }
+                }
+            }
+        }
+        return runtimeCachedKey;
     }
 
     public String extractUsername(String token) {
