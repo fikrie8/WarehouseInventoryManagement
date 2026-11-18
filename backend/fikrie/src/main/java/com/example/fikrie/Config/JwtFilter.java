@@ -2,6 +2,7 @@ package com.example.fikrie.Config;
 
 import com.example.fikrie.Service.JwtService;
 import com.example.fikrie.Service.MyUserDetailService;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,7 +34,11 @@ public class JwtFilter extends OncePerRequestFilter {
         String username = null;
         if((Objects.nonNull(authHeader)) && (authHeader.startsWith("Bearer "))) {
             token = authHeader.substring(7);
-            username = jwtService.extractUsername(token);
+            try{
+                username = jwtService.extractUsername(token);
+            } catch (JwtException | IllegalArgumentException e) {
+                logger.warn("Invalid or tampered JWT token rejected : " + e.getMessage());
+            }
         }
         if((Objects.nonNull(username)) && (Objects.isNull(SecurityContextHolder.getContext().getAuthentication()))) {
             UserDetails userDetails = myUserDetailService.loadUserByUsername(username);
