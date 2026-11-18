@@ -1,5 +1,6 @@
 package com.example.fikrie.Model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -23,6 +24,7 @@ public class Inbound {
     private Date dateReceived;
     @ManyToOne
     @JoinColumn(name = "product_sku", referencedColumnName = "sku", nullable = false)
+    @JsonBackReference
     private Inventory inventory;
     private int quantity;
     private String location;
