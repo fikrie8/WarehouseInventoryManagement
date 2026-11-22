@@ -40,21 +40,23 @@ public class InventoryService {
         return requestRespondInventory;
     }
 
-    public RequestRespondInventory register(RequestRespondInventory inventoryRegistrationRequest) {
+    public RequestRespondInventory singleRegister(RequestRespondInventory inventoryRegistrationRequest) {
         RequestRespondInventory requestRespondInventory = new RequestRespondInventory();
-        try {
-            Inventory inventory = new Inventory();
-            inventory.setCategory(inventoryRegistrationRequest.getCategory());
-            inventory.setSku(inventoryRegistrationRequest.getSku());
-            inventory.setName(inventoryRegistrationRequest.getName());
-            inventory.setLocation(inventoryRegistrationRequest.getLocation());
-            inventory.setQuantity(inventoryRegistrationRequest.getQuantity());
-            inventory.setSupplier(inventoryRegistrationRequest.getSupplier());
-            Inventory inventoryRegistered = inventoryRepo.save(inventory);
-            if(inventoryRegistered.getId() > 0) {
-                requestRespondInventory.setInventory(inventoryRegistered);
-                requestRespondInventory.setStatusCode(200);
-                requestRespondInventory.setMessage("Inventory has been registered successfully");
+        Inventory inventory = new Inventory();
+        inventory.setCategory(inventoryRegistrationRequest.getCategory());
+        inventory.setSku(inventoryRegistrationRequest.getSku());
+        inventory.setName(inventoryRegistrationRequest.getName());
+        inventory.setLocation(inventoryRegistrationRequest.getLocation());
+        inventory.setQuantity(inventoryRegistrationRequest.getQuantity());
+        inventory.setSupplier(inventoryRegistrationRequest.getSupplier());
+        Inventory inventoryRegistered = inventoryRepo.save(inventory);
+        requestRespondInventory.setInventory(inventoryRegistered);
+        requestRespondInventory.setStatusCode(200);
+        requestRespondInventory.setMessage("Inventory has been registered successfully");
+
+        return requestRespondInventory;
+    }
+
     @Transactional
     public RequestRespondInventory bulkRegister(MultipartFile file, int header) {
         List<Inventory> inventoryList = new ArrayList<>();
