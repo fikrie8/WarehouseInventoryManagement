@@ -1,0 +1,42 @@
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: inventory_mysql
+    environment:
+      - TZ=Asia/Kuala_Lumpur
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_local_data:/var/lib/mysql
+
+  backend:
+    build: ./backend
+    container_name: inventory_backend
+    restart: always
+    depends_on:
+      - db
+    environment:
+      - TZ=Asia/Kuala_Lumpur
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/${DB_NAME}?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+      - SPRING_DATASOURCE_USERNAME=root
+      - SPRING_DATASOURCE_PASSWORD=${DB_ROOT_PASSWORD}
+      - ALLOWED_ORIGINS=${PROD_ALLOWED_ORIGINS}
+      - ADMIN_EMAIL=${SYS_ADMIN_EMAIL}
+      - ADMIN_PASSWORD=4{SYS_ADMIN_PASSWORD}
+      - WAREHOUSE_JWT_SECRET=dGhpcy1pcy1hLXNlY3VyZS0yNTYtYml0LXNlY3JldC1rZXktZm9yLXByb2R1Y3Rpb24td2FyZWhvdXNlLW1hbmFnZXI=
+
+  frontend:
+    build: ./frontend
+    container_name: inventory_frontend
+    environment:
+      - TZ=Asia/Kuala_Lumpur
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  mysql_local_data:
