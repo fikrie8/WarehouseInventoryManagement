@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(UserRegisterLoginController.class)
 @Import({SecurityConfig.class, JwtFilter.class})
-@TestPropertySource(properties = "jwt.secret-key=9a2f6c2647d3e91122a7f5a284c4f92318491b489c6295711b7d5d142b322a39")
+@TestPropertySource(properties = "app.jwt.secret-key=9a2f6c2647d3e91122a7f5a284c4f92318491b489c6295711b7d5d142b322a39")
 @DisplayName("Phase 1: Production-Identical JWT Security & Auth Verification")
 public class RegisterLoginTest {
 

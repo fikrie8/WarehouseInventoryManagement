@@ -15,10 +15,10 @@ import java.util.Optional;
 @Slf4j
 public class AdminSeeder {
 
-    @Value("${ADMIN_EMAIL}")
+    @Value("${app.admin.email}")
     private String adminEmail;
 
-    @Value("${ADMIN_PASSWORD}")
+    @Value("${app.admin.password}")
     private String adminPassword;
 
     @Bean

@@ -19,7 +19,7 @@ public class JwtService {
 
     // Added a volatile cached storage key so the random key stays identical
     // for as long as the application is running, preventing internal reload crashes.
-    @Value("${jwt.secret-key}")
+    @Value("${app.jwt.secret-key}")
     private String secretKey;
     private volatile SecretKey runtimeCachedKey = null;
     private static final long EXPIRATION_TIME = 86400000;
