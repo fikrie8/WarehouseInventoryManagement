@@ -1,0 +1,52 @@
+name: Warehouse Inventory Manager CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  backend-tests:
+    name: Run Spring Boot Tests (Slice, Integration & Security)
+    runs-on: ubuntu-latest
+
+    # 1. Spin up a temporary MySQL 8.0 database container for @SpringBootTest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: testpassword123
+          MYSQL_DATABASE: WarehouseInventoryManager
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u root -ptestpassword123"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      # 2. Check out your repository code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 3. Set up Java 17 (Change '17' to '21' if your pom.xml uses Java 21)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      # 4. Run all 48 tests using your application.properties environment overrides
+      - name: Run Maven Test Suite
+        working-directory: ./backend/fikrie # Adjust if your pom.xml is in a different folder
+        env:
+          SPRING_DATASOURCE_URL: jdbc:mysql://127.0.0.1:3306/WarehouseInventoryManager?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false
+          SPRING_DATASOURCE_USERNAME: root
+          SPRING_DATASOURCE_PASSWORD: testpassword123
+          ADMIN_EMAIL: admin@gmail.com
+          ADMIN_PASSWORD: Admin12345
+          WAREHOUSE_JWT_SECRET: dGhpcy1pcy1hLXNlY3JldC1rZXktZm9yLXRlc3RpbmctYXV0aGVudGljYXRpb24taW50ZWdyYXRpb24=
+        run: chmod +x mvnw && ./mvnw clean test -Dsurefire.useFile=false
