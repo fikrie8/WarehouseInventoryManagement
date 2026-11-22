@@ -34,7 +34,12 @@ const Inventory = ({ user }) => {
                 setInventory(response.data.listOfInventoryDTO || []);
             }
         } catch (err) {
-            console.error("API Error:", err.response?.status, err.message);
+            const errorMessage = getErrorMessage(err)
+            if(err.response) {
+                console.error("Failed to fetch inventory, Server/API error : " + errorMessage);
+            } else {
+                console.error("Failed to fetch inventory, Client error : " + errorMessage);
+            }
         } finally {
             setLoading(false); // ALWAYS stop loading, even on error
         }

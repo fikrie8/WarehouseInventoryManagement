@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { getErrorMessage } from './utilities/ErrorHandler';
 
 import './App.css';
 
@@ -77,12 +78,9 @@ const LoginOrRegister = () => {
                 }
             }
         } catch (err) {
-            if(err.response) {
-                alert(`Failed to ${endpoint}, Server/API error : ` + err.response.data);
-                console.error(`Failed to ${endpoint}, Server/API error : ` + err.response.data);
-            } else {
-                console.error(`Failed to ${endpoint}, Client error : ` + err.message);
-            }
+            const errorMessage = getErrorMessage(err);
+            alert(`Failed to ${endpoint}, Server/API error : ` + errorMessage);
+            console.error(`Failed to ${endpoint}, Server/API error : ` + errorMessage);
         }
     };
 

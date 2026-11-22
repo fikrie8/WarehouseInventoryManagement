@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { getErrorMessage } from './utilities/ErrorHandler';
 
 const InboundOutbound = ({ user }) => {
     const [subTab, setSubTab] = useState('inbound');
@@ -31,12 +32,13 @@ const InboundOutbound = ({ user }) => {
                     Authorization: `Bearer ${token}` 
                 } 
             };
-            const endpoint = subTab === 'inbound' ? '/inbound/get-all' : '/outbound/get-all';
-            const res = await axios.get(`http://localhost:8080${endpoint}`, config);
+            const endpoint = subTab === 'inbound' ? 'inbound/get-all' : 'outbound/get-all';
+            const res = await axios.get(`/api/${endpoint}`, config);
             const list = res.data.listOfInbound || res.data.listOfOutbound || [];
             setData(Array.isArray(list) ? list : []);
         } catch (err) {
-            console.error("Fetch error:", err);
+            const errorMessage = getErrorMessage(err);
+            console.error("Fetch error:", errorMessage);
             setData([]);
         } finally {
             setLoading(false);
@@ -56,8 +58,8 @@ const InboundOutbound = ({ user }) => {
                     Authorization: `Bearer ${token}` 
                 } 
             };
-            const endpoint = subTab === 'inbound' ? '/inbound/register' : '/outbound/register';
-            const response = await axios.post(`http://localhost:8080${endpoint}`, formData, config);
+            const endpoint = subTab === 'inbound' ? 'inbound/register' : 'outbound/register';
+            const response = await axios.post(`api/${endpoint}`, formData, config);
             if(response.data.statusCode == 200) {
                 alert(`${subTab.toUpperCase()} successfully recorded!`);
                 setShowModal(false);
@@ -68,7 +70,9 @@ const InboundOutbound = ({ user }) => {
                 setShowModal(false);
             }
         } catch (err) {
-            alert("Error: " + (err.response?.data?.message || "Failed to save record"));
+            const errorMessage = getErrorMessage(err);
+            alert("Error. Failed to add");
+            console.error("Failed to add inbound/outbound. Error details: " + errorMessage);
         }
     };
 
