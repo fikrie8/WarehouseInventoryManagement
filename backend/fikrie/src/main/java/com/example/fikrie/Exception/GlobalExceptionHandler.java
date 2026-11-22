@@ -1,6 +1,6 @@
-package com.example.fikrie.exception;
+package com.example.fikrie.Exception;
 
-import com.example.fikrie.DataTransferObject.RequestRespondUser;
+import com.example.fikrie.DataTransferObject.ErrorResponse;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
@@ -20,13 +20,13 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 public class GlobalExceptionHandler {
 
     // =========================================================================
-    // 🛡️ 1. AUTHENTICATION & SECURITY EXCEPTIONS (SPRING SECURITY FRAMEWORK)
+    // 1. AUTHENTICATION & SECURITY EXCEPTIONS (SPRING SECURITY FRAMEWORK)
     // =========================================================================
 
     // Triggers when a user provides an incorrect username or password password matches
     @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<RequestRespondUser> handleBadCredentials(BadCredentialsException e) {
-        RequestRespondUser response = new RequestRespondUser();
+    public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException e) {
+        ErrorResponse response = new ErrorResponse();
         response.setStatusCode(HttpStatus.UNAUTHORIZED.value()); // 401
         response.setError("Unauthorized");
         response.setMessage("Authentication failed: Invalid username or password.");
@@ -35,8 +35,8 @@ public class GlobalExceptionHandler {
 
     // Triggers when a user is valid but does not possess the correct authority role (e.g., USER accessing /admin/**)
     @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<RequestRespondUser> handleAccessDenied(AccessDeniedException e) {
-        RequestRespondUser response = new RequestRespondUser();
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException e) {
+        ErrorResponse response = new ErrorResponse();
         response.setStatusCode(HttpStatus.FORBIDDEN.value()); // 403
         response.setError("Forbidden");
         response.setMessage("Access Denied: You do not have the required permissions to access this endpoint.");
@@ -45,8 +45,8 @@ public class GlobalExceptionHandler {
 
     // Triggers when trying to access a secure endpoint completely unauthenticated (Missing/Expired Bearer token)
     @ExceptionHandler(InsufficientAuthenticationException.class)
-    public ResponseEntity<RequestRespondUser> handleInsufficientAuthentication(InsufficientAuthenticationException e) {
-        RequestRespondUser response = new RequestRespondUser();
+    public ResponseEntity<ErrorResponse> handleInsufficientAuthentication(InsufficientAuthenticationException e) {
+        ErrorResponse response = new ErrorResponse();
         response.setStatusCode(HttpStatus.FORBIDDEN.value()); // 403
         response.setError("Forbidden");
         response.setMessage("Authentication required: Please provide a valid Bearer token in the Authorization header.");
@@ -54,13 +54,13 @@ public class GlobalExceptionHandler {
     }
 
     // =========================================================================
-    // 🗄️ 2. DATABASE PERSISTENCE & CONSTRAINT EXCEPTIONS (SPRING DATA / JDBC)
+    // 2. DATABASE PERSISTENCE & CONSTRAINT EXCEPTIONS (SPRING DATA / JDBC)
     // =========================================================================
 
     // Triggers when a explicit unique database constraint fails (e.g., inserting a duplicate username or email)
     @ExceptionHandler(DuplicateKeyException.class)
-    public ResponseEntity<RequestRespondUser> handleDuplicateKey(DuplicateKeyException e) {
-        RequestRespondUser response = new RequestRespondUser();
+    public ResponseEntity<ErrorResponse> handleDuplicateKey(DuplicateKeyException e) {
+        ErrorResponse response = new ErrorResponse();
         response.setStatusCode(HttpStatus.CONFLICT.value()); // 409
         response.setError("Conflict");
         response.setMessage("Registration failed: The chosen username or email address is already in use.");
@@ -68,19 +68,33 @@ public class GlobalExceptionHandler {
     }
 
     // Triggers for general data persistence errors (e.g., null constraints, data truncate, unique index breaches)
+    //I've modified this exception because I want to display the message when a duplicate entry happens
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<RequestRespondUser> handleDataIntegrityViolation(DataIntegrityViolationException e) {
-        RequestRespondUser response = new RequestRespondUser();
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException e) {
+        ErrorResponse response = new ErrorResponse();
         response.setStatusCode(HttpStatus.CONFLICT.value()); // 409
         response.setError("Conflict");
-        response.setMessage("Database integrity breach: Data collision or invalid relation reference detected.");
+        String errorMessage = e.getMostSpecificCause().getMessage();
+        if (errorMessage != null && errorMessage.contains("Duplicate entry")) {
+            String[] parts = errorMessage.split("'");
+            String duplicateValue = "record";
+            if (parts.length > 1) {
+                duplicateValue = parts[1];
+            }
+            response.setMessage("The value '" + duplicateValue + "' already exists. Please use a different value.");
+        } else if (e.getMessage() != null && !e.getMessage().contains("could not execute statement")) {
+            response.setMessage(e.getMessage());
+        } else {
+            response.setMessage("Database integrity breach: Data collision or invalid relation reference detected.");
+        }
+
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
     // Triggers when explicitly performing an operation on a user identifier that does not exist
     @ExceptionHandler(UsernameNotFoundException.class)
-    public ResponseEntity<RequestRespondUser> handleUsernameNotFound(UsernameNotFoundException e) {
-        RequestRespondUser response = new RequestRespondUser();
+    public ResponseEntity<ErrorResponse> handleUsernameNotFound(UsernameNotFoundException e) {
+        ErrorResponse response = new ErrorResponse();
         response.setStatusCode(HttpStatus.NOT_FOUND.value()); // 404
         response.setError("Not Found");
         response.setMessage(e.getMessage());
@@ -88,13 +102,13 @@ public class GlobalExceptionHandler {
     }
 
     // =========================================================================
-    // 🌐 3. CLIENT WEB REQUEST MALFORMATIONS (SPRING MVC FRAMEWORK)
+    // 3. CLIENT WEB REQUEST MALFORMATIONS (SPRING MVC FRAMEWORK)
     // =========================================================================
 
     // Triggers when field validation constraints fail (e.g., if you add @Valid/@NotBlank to input params)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<RequestRespondUser> handleValidationFailures(MethodArgumentNotValidException e) {
-        RequestRespondUser response = new RequestRespondUser();
+    public ResponseEntity<ErrorResponse> handleValidationFailures(MethodArgumentNotValidException e) {
+        ErrorResponse response = new ErrorResponse();
         response.setStatusCode(HttpStatus.BAD_REQUEST.value()); // 400
         response.setError("Bad Request");
 
@@ -110,8 +124,8 @@ public class GlobalExceptionHandler {
 
     // Triggers when passing an empty body request payload or malformed unreadable JSON syntax format
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<RequestRespondUser> handleUnreadableJson(HttpMessageNotReadableException e) {
-        RequestRespondUser response = new RequestRespondUser();
+    public ResponseEntity<ErrorResponse> handleUnreadableJson(HttpMessageNotReadableException e) {
+        ErrorResponse response = new ErrorResponse();
         response.setStatusCode(HttpStatus.BAD_REQUEST.value()); // 400
         response.setError("Bad Request");
         response.setMessage("Malformed JSON request payload body. Verification unparseable.");
@@ -120,8 +134,8 @@ public class GlobalExceptionHandler {
 
     // Triggers when an endpoint exists but the client hits it using the wrong HTTP verb method (e.g., GET instead of POST)
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
-    public ResponseEntity<RequestRespondUser> handleMethodNotSupported(HttpRequestMethodNotSupportedException e) {
-        RequestRespondUser response = new RequestRespondUser();
+    public ResponseEntity<ErrorResponse> handleMethodNotSupported(HttpRequestMethodNotSupportedException e) {
+        ErrorResponse response = new ErrorResponse();
         response.setStatusCode(HttpStatus.METHOD_NOT_ALLOWED.value()); // 405
         response.setError("Method Not Allowed");
         response.setMessage(e.getMessage());
@@ -130,8 +144,8 @@ public class GlobalExceptionHandler {
 
     // Triggers when a request attempts to hit a resource route path that does not map to any controller endpoint
     @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<RequestRespondUser> handleRouteNotFound(NoResourceFoundException e) {
-        RequestRespondUser response = new RequestRespondUser();
+    public ResponseEntity<ErrorResponse> handleRouteNotFound(NoResourceFoundException e) {
+        ErrorResponse response = new ErrorResponse();
         response.setStatusCode(HttpStatus.NOT_FOUND.value()); // 404
         response.setError("Not Found");
         response.setMessage("Requested API route endpoint resource could not be found.");
@@ -139,11 +153,11 @@ public class GlobalExceptionHandler {
     }
 
     // =========================================================================
-    // 💥 4. GLOBAL CATCH-ALL CRITICAL ENGINE RECOVERY (GLOBAL BACKUP)
+    // 4. GLOBAL CATCH-ALL CRITICAL ENGINE RECOVERY (GLOBAL BACKUP)
     // =========================================================================
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<RequestRespondUser> handleGlobalCatchAll(Exception e) {
-        RequestRespondUser response = new RequestRespondUser();
+    public ResponseEntity<ErrorResponse> handleGlobalCatchAll(Exception e) {
+        ErrorResponse response = new ErrorResponse();
         response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value()); // 500
         response.setError("Internal Server Error");
         response.setMessage("An unexpected system exception occurred: " + e.getMessage());
