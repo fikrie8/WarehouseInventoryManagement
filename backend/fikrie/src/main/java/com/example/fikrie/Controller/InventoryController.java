@@ -7,9 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @RestController
 @RequestMapping("/inventory")
 @RequiredArgsConstructor
@@ -27,9 +24,14 @@ public class InventoryController {
         return ResponseEntity.ok(inventoryService.getAllInventory());
     }
 
-    @PostMapping("/register-inventory")
-    public ResponseEntity<RequestRespondInventory> getUserInfo(@RequestBody RequestRespondInventory requestRespondInventory) {
-        return ResponseEntity.ok(inventoryService.register(requestRespondInventory));
+    @PostMapping("/register-inventory/single-upload")
+    public ResponseEntity<RequestRespondInventory> registerSingleInventory(@RequestBody RequestRespondInventory requestRespondInventory) {
+        return ResponseEntity.ok(inventoryService.singleRegister(requestRespondInventory));
+    }
+
+    @PostMapping("/register-inventory/bulk-upload")
+    public ResponseEntity<RequestRespondInventory> registerBulkInventory(@RequestParam("file") MultipartFile file, @RequestParam("headerIndex") int headerIndex) {
+        return ResponseEntity.ok(inventoryService.bulkRegister(file, headerIndex));
     }
 
     @PutMapping("/update-inventory")
